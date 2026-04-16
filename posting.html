@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -213,6 +213,14 @@
         </header>
 
         <main class="feed-container">
+            <!-- DAFTAR AKUN TERDAFTAR (STORIES-LIKE) -->
+            <div class="users-list-container" style="margin-bottom: 24px; padding: 20px; background: var(--white); border-radius: var(--border-radius-lg); box-shadow: 0 8px 24px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.05);">
+                <div style="font-weight: 800; font-size: 15px; margin-bottom: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 6px;"><i class="ph-bold ph-users-three" style="color: var(--primary-teal); font-size: 20px;"></i> Anggota Trailblazer</div>
+                <div id="registeredUsersFeed" style="display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; -webkit-overflow-scrolling: touch;">
+                    <!-- Daftar pengguna terinjeksi dari JS -->
+                </div>
+            </div>
+
             <!-- Form Buat Post Baru -->
             <div class="create-post-card">
                 <div class="post-header-author">
@@ -302,6 +310,9 @@
                 document.getElementById('activeUserName').innerText = activeUserObj.username;
                 document.getElementById('activeUserAvatar').src = activeUserObj.avatar ? activeUserObj.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeUserObj.username)}&background=1aa39a&color=fff&size=128`;
                 
+                // Render pengguna terdaftar
+                renderRegisteredUsers();
+
                 // Render postingan dari Local Storage
                 renderPosts();
             }
@@ -310,6 +321,33 @@
         function logout() {
             localStorage.removeItem('activeUser');
             window.location.href = "login.html";
+        }
+
+        // Logic Merender Akun Terdaftar
+        function renderRegisteredUsers() {
+            const container = document.getElementById('registeredUsersFeed');
+            if(!container) return;
+            const usersDB = JSON.parse(localStorage.getItem('usersDB')) || [];
+            let html = '';
+            
+            usersDB.forEach(user => {
+                const avatar = user.avatar ? user.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&background=38495a&color=fff`;
+                const isMe = activeUserObj && activeUserObj.username === user.username;
+                html += `
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 64px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" title="Akun: ${user.username}">
+                        <div style="width: 58px; height: 58px; border-radius: 50%; padding: 2px; background: linear-gradient(45deg, var(--primary-teal), var(--accent-pink)); box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                            <img src="${avatar}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 2px solid var(--white);">
+                        </div>
+                        <span style="font-size: 11px; font-weight: ${isMe ? '800' : '600'}; color: var(--text-dark); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 68px;">${isMe ? 'Anda' : user.username}</span>
+                    </div>
+                `;
+            });
+            
+            if(usersDB.length === 0) {
+                container.innerHTML = '<span style="font-size: 13px; color: var(--text-muted); padding: 8px 0;">Belum ada anggota terdaftar di server ini.</span>';
+            } else {
+                container.innerHTML = html;
+            }
         }
 
         // Variabel penampung file dan tautan
