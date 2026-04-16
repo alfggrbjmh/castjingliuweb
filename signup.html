@@ -237,16 +237,36 @@
             usersDB.push(newUser);
             localStorage.setItem('usersDB', JSON.stringify(usersDB));
 
-            // Feedback sukses & Redirect ke Login
-            alert("Berhasil! Akun " + username + " telah dibuat. Silakan melakukan Log In.");
-            window.location.href = "login.html";
+            // Auto Login session
+            localStorage.setItem('activeUser', JSON.stringify({
+                username: username,
+                email: email
+            }));
+
+            // Feedback sukses & Redirect ke Postingan
+            alert("Berhasil! Akun " + username + " telah dibuat dan langsung berhasil Log In.");
+            window.location.href = "posting.html";
         });
     </script>
 
-    <!-- CEK SUDAH LOGIN -->
+    <!-- CEK SUDAH LOGIN & SEED MOCK DB -->
     <script>
+        if (!localStorage.getItem('postsDB') || !localStorage.getItem('usersDB')) {
+            if (!localStorage.getItem('usersDB')) {
+                localStorage.setItem('usersDB', JSON.stringify([
+                    { username: "Jingliu Official", email: "admin@castorice-jingliu.com", avatar: "chibi_jingliu.png" },
+                    { username: "Castorice Admin", email: "mod@castorice-jingliu.com", avatar: "chibi_castorice.png" }
+                ]));
+            }
+            if (!localStorage.getItem('postsDB')) {
+                localStorage.setItem('postsDB', JSON.stringify([
+                    { id: 1, authorName: "Jingliu Official", content: "Selamat datang Trailblazer! Gunakan halaman ini untuk berbagi momen gacha dan artwork favoritmu. #Jingliu #Castorice", time: "1 jam yang lalu", likedBy: ["Admin"], comments: [{author: "Trailblazer", text: "Siap, terima kasih admin!"}] },
+                    { id: 2, authorName: "Castorice Admin", content: "Keajaiban Kuantum sedang menunggumu. Sudahkah kalian melakukan Warp hari ini? #GachaLife", time: "3 jam yang lalu", image: "hero_banner.png", likedBy: [], comments: [] }
+                ]));
+            }
+        }
         if(localStorage.getItem('activeUser')) {
-            window.location.replace("index.html");
+            window.location.replace("posting.html");
         }
     </script>
 </body>

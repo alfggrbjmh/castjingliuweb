@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +11,8 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
         .feed-container {
             max-width: 700px;
@@ -20,6 +22,7 @@
             padding: 0 20px;
             padding-bottom: 100px;
         }
+
         .create-post-card {
             background: var(--white);
             border-radius: var(--border-radius-lg);
@@ -31,15 +34,18 @@
             position: relative;
             transition: border-color 0.3s;
         }
+
         .create-post-card:focus-within {
             border-color: var(--primary-teal-light);
         }
+
         .post-header-author {
             display: flex;
             align-items: center;
             gap: 16px;
             margin-bottom: 16px;
         }
+
         .author-avatar {
             width: 48px;
             height: 48px;
@@ -47,16 +53,19 @@
             object-fit: cover;
             border: 2px solid var(--primary-teal);
         }
+
         .author-info h3 {
             font-size: 16px;
             font-weight: 700;
             color: var(--text-dark);
         }
+
         .author-info p {
             font-size: 13px;
             color: var(--primary-teal);
             font-weight: 500;
         }
+
         .post-input {
             width: 100%;
             border: none;
@@ -64,29 +73,35 @@
             padding: 16px;
             border-radius: var(--border-radius-md);
             font-family: inherit;
-            resize: none; /* Cegah resize manual */
+            resize: none;
+            /* Cegah resize manual */
             min-height: 100px;
             font-size: 15px;
             color: var(--text-dark);
             margin-bottom: 16px;
         }
+
         .post-input:focus {
             outline: none;
             background: var(--white);
             box-shadow: 0 0 0 2px rgba(106, 208, 201, 0.2) inset;
         }
+
         .post-input::placeholder {
             color: var(--text-muted);
         }
+
         .post-actions {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
+
         .action-icon-btns {
             display: flex;
             gap: 12px;
         }
+
         .action-icon-btns button {
             background: none;
             border: none;
@@ -95,16 +110,18 @@
             cursor: pointer;
             transition: color 0.2s, transform 0.2s;
         }
+
         .action-icon-btns button:hover {
             color: var(--primary-teal);
             transform: scale(1.1);
         }
+
         .btn-post {
             padding: 10px 24px;
             font-size: 15px;
             border-radius: 30px;
         }
-        
+
         .timeline-divider {
             display: flex;
             align-items: center;
@@ -115,10 +132,11 @@
             text-transform: uppercase;
             letter-spacing: 2px;
         }
+
         .timeline-divider::after {
             content: '';
             flex: 1;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
             margin-left: 16px;
         }
 
@@ -126,34 +144,39 @@
             background: var(--white);
             border-radius: var(--border-radius-lg);
             padding: 24px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
             margin-bottom: 24px;
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
             transition: transform 0.2s;
         }
+
         .post-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
         }
+
         .post-meta-time {
             font-size: 12px;
             color: var(--text-muted);
             font-weight: 400;
             margin-left: auto;
         }
+
         .post-content-text {
             margin-top: 16px;
             font-size: 15px;
             line-height: 1.6;
             color: var(--text-dark);
         }
+
         .post-engagement {
             margin-top: 20px;
             padding-top: 16px;
-            border-top: 1px solid rgba(0,0,0,0.05);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
             display: flex;
             gap: 24px;
         }
+
         .engage-btn {
             background: none;
             border: none;
@@ -166,8 +189,14 @@
             cursor: pointer;
             transition: color 0.2s;
         }
-        .engage-btn i { font-size: 20px; }
-        .engage-btn:hover { color: var(--accent-pink); }
+
+        .engage-btn i {
+            font-size: 20px;
+        }
+
+        .engage-btn:hover {
+            color: var(--accent-pink);
+        }
     </style>
     <!-- 🚀 Favicon Optimization -->
     <link rel="icon" type="image/png" sizes="32x32" href="chibi_jingliu.png">
@@ -176,8 +205,10 @@
     <meta name="theme-color" content="#1aa39a">
 
     <!-- 🚀 SEO & AI Overview Readiness -->
-    <meta name="description" content="Bergabunglah dengan Jejaring Komunitas Eksklusif Castorice & Jingliu. Dapatkan koleksi artwork, diskusi lore mendalam, dan status terkini dari para Trailblazer terbaik.">
-    <meta name="keywords" content="Castorice, Jingliu, Honkai Star Rail, Komunitas Trailblazer, Galeri Artwork Anime, Lore Game, Jejaring Sosial">
+    <meta name="description"
+        content="Bergabunglah dengan Jejaring Komunitas Eksklusif Castorice & Jingliu. Dapatkan koleksi artwork, diskusi lore mendalam, dan status terkini dari para Trailblazer terbaik.">
+    <meta name="keywords"
+        content="Castorice, Jingliu, Honkai Star Rail, Komunitas Trailblazer, Galeri Artwork Anime, Lore Game, Jejaring Sosial">
     <meta name="author" content="Castorice & Jingliu Administrator">
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
     <link rel="canonical" href="https://castorice-jingliu.com/">
@@ -192,14 +223,17 @@
     <link rel="dns-prefetch" href="https://unpkg.com">
     <link rel="dns-prefetch" href="https://ui-avatars.com">
 </head>
+
 <body>
     <div class="bg-pattern"></div>
     <div class="app-container">
         <!-- HEADER -->
         <header>
             <div class="header-left">
-                <button class="icon-btn dark-bg" onclick="window.location.href='profile.html'" title="My Profile"><i class="ph ph-user"></i></button>
-                <button class="icon-btn teal-bg" onclick="window.location.href='posting.html'" title="New Post"><i class="ph ph-plus"></i></button>
+                <button class="icon-btn dark-bg" onclick="window.location.href='profile.html'" title="My Profile"><i
+                        class="ph ph-user"></i></button>
+                <button class="icon-btn teal-bg" onclick="window.location.href='posting.html'" title="New Post"><i
+                        class="ph ph-plus"></i></button>
             </div>
             <nav class="header-center">
                 <a href="index.html">Home</a>
@@ -213,13 +247,7 @@
         </header>
 
         <main class="feed-container">
-            <!-- DAFTAR AKUN TERDAFTAR (STORIES-LIKE) -->
-            <div class="users-list-container" style="margin-bottom: 24px; padding: 20px; background: var(--white); border-radius: var(--border-radius-lg); box-shadow: 0 8px 24px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.05);">
-                <div style="font-weight: 800; font-size: 15px; margin-bottom: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 6px;"><i class="ph-bold ph-users-three" style="color: var(--primary-teal); font-size: 20px;"></i> Anggota Trailblazer</div>
-                <div id="registeredUsersFeed" style="display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; -webkit-overflow-scrolling: touch;">
-                    <!-- Daftar pengguna terinjeksi dari JS -->
-                </div>
-            </div>
+
 
             <!-- Form Buat Post Baru -->
             <div class="create-post-card">
@@ -230,22 +258,31 @@
                         <p>Apa yang ada di pikiranmu hari ini?</p>
                     </div>
                 </div>
-                
-                <textarea class="post-input" id="postInputText" placeholder="Bagikan hasil gacha, artwork, atau pengalamanmu..."></textarea>
-                
+
+                <textarea class="post-input" id="postInputText"
+                    placeholder="Bagikan hasil gacha, artwork, atau pengalamanmu..."></textarea>
+
                 <!-- Preview area untuk gambar & tautan -->
-                <div id="attachedPreview" style="display:none; margin-bottom: 20px; align-items:flex-start; gap: 12px; padding: 12px; background: #f8fafb; border-radius: var(--border-radius-md);">
-                    <img id="previewImage" src="" style="height: 80px; width: 80px; object-fit: cover; border-radius: 8px; display: none;">
-                    <div id="previewLink" style="font-size:13px; color:var(--primary-teal); font-weight: 600; word-break:break-all; flex: 1; display:none; padding-top: 8px;"></div>
-                    <button onclick="clearAttachments()" style="background:none; border:none; color:#ea4335; font-size:20px; cursor:pointer;" title="Hapus Lampiran"><i class="ph-fill ph-x-circle"></i></button>
+                <div id="attachedPreview"
+                    style="display:none; margin-bottom: 20px; align-items:flex-start; gap: 12px; padding: 12px; background: #f8fafb; border-radius: var(--border-radius-md);">
+                    <img id="previewImage" src=""
+                        style="height: 80px; width: 80px; object-fit: cover; border-radius: 8px; display: none;">
+                    <div id="previewLink"
+                        style="font-size:13px; color:var(--primary-teal); font-weight: 600; word-break:break-all; flex: 1; display:none; padding-top: 8px;">
+                    </div>
+                    <button onclick="clearAttachments()"
+                        style="background:none; border:none; color:#ea4335; font-size:20px; cursor:pointer;"
+                        title="Hapus Lampiran"><i class="ph-fill ph-x-circle"></i></button>
                 </div>
 
                 <div class="post-actions">
                     <div class="action-icon-btns">
                         <input type="file" id="imageUploader" accept="image/*" style="display:none;">
-                        <button title="Unggah Gambar" onclick="document.getElementById('imageUploader').click()"><i class="ph ph-image"></i></button>
+                        <button title="Unggah Gambar" onclick="document.getElementById('imageUploader').click()"><i
+                                class="ph ph-image"></i></button>
                         <button title="Bagikan Tautan" onclick="attachLink()"><i class="ph ph-link"></i></button>
-                        <button title="Sematkan Emotikon" onclick="alert('Fitur emotikon akan segera hadir!')"><i class="ph ph-smiley"></i></button>
+                        <button title="Sematkan Emotikon" onclick="alert('Fitur emotikon akan segera hadir!')"><i
+                                class="ph ph-smiley"></i></button>
                     </div>
                     <button class="btn btn-primary btn-post" onclick="submitPost()">Kirim Posting</button>
                 </div>
@@ -266,7 +303,8 @@
                         <div class="post-meta-time">2 Jam yang lalu</div>
                     </div>
                     <div class="post-content-text">
-                        Selamat datang semuanya! Jangan ragu untuk membagikan pencapaian gacha maupun fan-art Castorice & Jingliu kalian di halaman komunitas ini.
+                        Selamat datang semuanya! Jangan ragu untuk membagikan pencapaian gacha maupun fan-art Castorice
+                        & Jingliu kalian di halaman komunitas ini.
                     </div>
                     <div class="post-engagement">
                         <button class="engage-btn"><i class="ph ph-heart"></i> 99+</button>
@@ -274,7 +312,7 @@
                     </div>
                 </div>
             </div>
-            
+
         </main>
     </div>
 
@@ -284,13 +322,13 @@
         const activeUserStr = localStorage.getItem('activeUser');
         let activeUserObj = activeUserStr ? JSON.parse(activeUserStr) : null;
 
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const activeUserStr = localStorage.getItem('activeUser');
-            if(activeUserStr) {
+            if (activeUserStr) {
                 activeUserObj = JSON.parse(activeUserStr);
-                
+
                 const headerRight = document.querySelector('.header-right');
-                if(headerRight) {
+                if (headerRight) {
                     headerRight.innerHTML = `
                         <div style="display:flex; align-items:center; gap:16px;">
                             <a href="profile.html" style="font-weight:800; font-size:15px; color:var(--text-dark); text-decoration:none; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-teal)'" onmouseout="this.style.color='var(--text-dark)'">
@@ -308,27 +346,26 @@
             } else {
                 // GUEST MODE
                 const headerRight = document.querySelector('.header-right');
-                if(headerRight) {
+                if (headerRight) {
                     headerRight.innerHTML = `
                         <a href="login.html" class="btn btn-outline" style="text-decoration: none;">Log in</a>
                         <a href="signup.html" class="btn btn-primary" style="text-decoration: none;">Sign up</a>
                     `;
                 }
-                
+
                 // Hide Create Post card for guests
                 const createCard = document.querySelector('.create-post-card');
-                if(createCard) createCard.style.display = 'none';
-                
+                if (createCard) createCard.style.display = 'none';
+
                 // Hide Create Post button in header-left for guest
                 const createBtn = document.querySelector('.icon-btn.teal-bg');
-                if(createBtn) createBtn.style.display = 'none';
+                if (createBtn) createBtn.style.display = 'none';
             }
 
             // Seed initial data if empty
             seedDatabase();
 
-            // Render pengguna terdaftar (Visible to all)
-            renderRegisteredUsers();
+
 
             // Render postingan dari Local Storage (Visible to all)
             renderPosts();
@@ -343,7 +380,7 @@
                         content: "Selamat datang Trailblazer! Gunakan halaman ini untuk berbagi momen gacha dan artwork favoritmu. #Jingliu #Castorice",
                         time: "1 jam yang lalu",
                         likedBy: ["Admin"],
-                        comments: [{author: "Trailblazer", text: "Siap, terima kasih admin!"}]
+                        comments: [{ author: "Trailblazer", text: "Siap, terima kasih admin!" }]
                     },
                     {
                         id: 2,
@@ -371,43 +408,18 @@
             window.location.href = "login.html";
         }
 
-        // Logic Merender Akun Terdaftar
-        function renderRegisteredUsers() {
-            const container = document.getElementById('registeredUsersFeed');
-            if(!container) return;
-            const usersDB = JSON.parse(localStorage.getItem('usersDB')) || [];
-            let html = '';
-            
-            usersDB.forEach(user => {
-                const avatar = user.avatar ? user.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&background=38495a&color=fff`;
-                const isMe = activeUserObj && activeUserObj.username === user.username;
-                html += `
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 64px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" title="Akun: ${user.username}">
-                        <div style="width: 58px; height: 58px; border-radius: 50%; padding: 2px; background: linear-gradient(45deg, var(--primary-teal), var(--accent-pink)); box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-                            <img src="${avatar}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 2px solid var(--white);">
-                        </div>
-                        <span style="font-size: 11px; font-weight: ${isMe ? '800' : '600'}; color: var(--text-dark); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 68px;">${isMe ? 'Anda' : user.username}</span>
-                    </div>
-                `;
-            });
-            
-            if(usersDB.length === 0) {
-                container.innerHTML = '<span style="font-size: 13px; color: var(--text-muted); padding: 8px 0;">Belum ada anggota terdaftar di server ini.</span>';
-            } else {
-                container.innerHTML = html;
-            }
-        }
+
 
         // Variabel penampung file dan tautan
         let pendingImage = null;
         let pendingLink = null;
 
         // Baca Gambar ke Base64 saat diupload
-        document.getElementById('imageUploader').addEventListener('change', function(e) {
+        document.getElementById('imageUploader').addEventListener('change', function (e) {
             const file = e.target.files[0];
-            if(!file) return;
+            if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(event) {
+            reader.onload = function (event) {
                 pendingImage = event.target.result;
                 document.getElementById('attachedPreview').style.display = 'flex';
                 document.getElementById('previewImage').style.display = 'block';
@@ -419,7 +431,7 @@
         // Prompt input tautan
         function attachLink() {
             const url = prompt("Masukkan Tautan (URL) menarik yang ingin Anda bagikan:", "https://");
-            if(url && url.length > 8) {
+            if (url && url.length > 8) {
                 pendingLink = url;
                 document.getElementById('attachedPreview').style.display = 'flex';
                 document.getElementById('previewLink').style.display = 'block';
@@ -441,15 +453,15 @@
         function submitPost() {
             const textArea = document.getElementById('postInputText');
             const textContent = textArea.value.trim();
-            
-            if(!textContent && !pendingImage && !pendingLink) {
+
+            if (!textContent && !pendingImage && !pendingLink) {
                 alert("Kamu belum menuliskan teks ataupun melampirkan foto / tautan sama sekali!");
                 return;
             }
 
             // Membuka database sosial dari Local Storage
             let postsDB = JSON.parse(localStorage.getItem('postsDB')) || [];
-            
+
             // Format Data Postingan Baru
             const newPost = {
                 id: Date.now(),
@@ -482,12 +494,12 @@
             const feedContainer = document.getElementById('postFeed');
             const postsDB = JSON.parse(localStorage.getItem('postsDB')) || [];
             const usersDB = JSON.parse(localStorage.getItem('usersDB')) || [];
-            
+
             let allHtml = '';
-            
+
             // Logika menampilkan filter aktif jika hashtag diklik
             let postsToRender = postsDB;
-            if(filterTag) {
+            if (filterTag) {
                 postsToRender = postsDB.filter(p => p.content.includes('#' + filterTag));
                 allHtml += `
                     <div style="background: #f1f9fa; padding: 16px 20px; border-radius: 12px; margin-bottom: 24px; border: 1px dashed var(--primary-teal); display: flex; justify-content: space-between; align-items: center;">
@@ -496,22 +508,22 @@
                     </div>
                 `;
             }
-            
+
             postsToRender.forEach(post => {
                 const authorUser = usersDB.find(u => u.username === post.authorName);
                 const avatar = authorUser && authorUser.avatar ? authorUser.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(post.authorName)}&background=38495a&color=fff`;
-                
+
                 // Cek Likes
                 const isLiked = activeUserObj && post.likedBy && post.likedBy.includes(activeUserObj.username);
                 const heartClass = isLiked ? 'ph-fill ph-heart' : 'ph ph-heart';
                 const heartStyle = isLiked ? 'color: var(--accent-pink);' : '';
                 const likeCount = post.likedBy ? post.likedBy.length : 0;
-                
+
                 // Cek Comments
                 const commentCount = post.comments ? post.comments.length : 0;
                 let commentsHtml = '<div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 12px;">';
-                
-                if(post.comments && post.comments.length > 0) {
+
+                if (post.comments && post.comments.length > 0) {
                     post.comments.forEach((c, cIndex) => {
                         const commenterUser = usersDB.find(u => u.username === c.author);
                         const cAvatar = commenterUser && commenterUser.avatar ? commenterUser.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.author)}&background=1aa39a&color=fff`;
@@ -529,7 +541,7 @@
                                     </button>
                                     
                                     <div id="menu-${post.id}-${cIndex}" style="display:none; position: absolute; right: 0; top: 100%; background: var(--white); border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 10; overflow: hidden; min-width: 140px;">
-                                        ${c.author === activeUserObj.username ? `<button onclick="deleteComment(${post.id}, ${cIndex})" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:#ea4335; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#f8fafb'" onmouseout="this.style.background='none'"><i class="ph-bold ph-trash"></i> Hapus</button>` : ''}
+                                        ${activeUserObj && c.author === activeUserObj.username ? `<button onclick="deleteComment(${post.id}, ${cIndex})" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:#ea4335; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#f8fafb'" onmouseout="this.style.background='none'"><i class="ph-bold ph-trash"></i> Hapus</button>` : ''}
                                         <button onclick="copyComment('${post.id}-${cIndex}')" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-dark); border-bottom:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#f8fafb'" onmouseout="this.style.background='none'"><i class="ph-bold ph-copy"></i> Salin</button>
                                         <button onclick="shareLink('${c.author}')" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-dark); display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#f8fafb'" onmouseout="this.style.background='none'"><i class="ph-bold ph-share-network"></i> Bagikan</button>
                                     </div>
@@ -538,9 +550,9 @@
                         `;
                     });
                 }
-                
+
                 // Form input komentar atau Link Login
-                if(activeUserObj) {
+                if (activeUserObj) {
                     const myAvatar = activeUserObj.avatar ? activeUserObj.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeUserObj.username)}&background=38495a&color=fff`;
                     commentsHtml += `
                         <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
@@ -559,10 +571,10 @@
 
                 // Rakit element jika ada foto/link
                 let mediaHtml = '';
-                if(post.image) {
+                if (post.image) {
                     mediaHtml += `<img src="${post.image}" style="width:100%; max-height:460px; object-fit:cover; border-radius:12px; margin-top:16px;">`;
                 }
-                if(post.link) {
+                if (post.link) {
                     mediaHtml += `
                         <a href="${post.link}" target="_blank" style="display:flex; align-items:center; gap:8px; color:var(--primary-teal); font-weight:700; text-decoration:none; background:#f1f9fa; padding:12px 16px; border-radius:8px; margin-top:12px; border: 1px solid rgba(106,208,201,0.2);">
                             <i class="ph-bold ph-arrow-square-out" style="font-size: 20px;"></i> Buka Tautan Eksternal
@@ -608,9 +620,9 @@
                     </div>
                 `;
             });
-            
+
             // Post default selalu di ujung paling bawah, hanya render jika tidak difilter
-            if(!filterTag) {
+            if (!filterTag) {
                 allHtml += `
                     <div class="post-card border-glow">
                         <div class="post-header-author" style="margin-bottom: 0;">
@@ -646,14 +658,14 @@
 
         // Logic memproses Like masuk ke Database agar aktif permanen
         function toggleLike(postId) {
-            if(!activeUserObj) return;
+            if (!activeUserObj) return;
             let postsDB = JSON.parse(localStorage.getItem('postsDB')) || [];
             const postIndex = postsDB.findIndex(p => p.id === postId);
-            if(postIndex > -1) {
-                if(!postsDB[postIndex].likedBy) postsDB[postIndex].likedBy = [];
-                
+            if (postIndex > -1) {
+                if (!postsDB[postIndex].likedBy) postsDB[postIndex].likedBy = [];
+
                 const userIdx = postsDB[postIndex].likedBy.indexOf(activeUserObj.username);
-                if(userIdx > -1) {
+                if (userIdx > -1) {
                     postsDB[postIndex].likedBy.splice(userIdx, 1); // Batal like
                 } else {
                     postsDB[postIndex].likedBy.push(activeUserObj.username); // Beri like
@@ -665,16 +677,16 @@
 
         // Logic memproses Komentar masuk ke Database via Inline Input
         function submitInlineComment(postId) {
-            if(!activeUserObj) return;
+            if (!activeUserObj) return;
             const inputEl = document.getElementById('commentInput_' + postId);
-            if(!inputEl) return;
+            if (!inputEl) return;
             const text = inputEl.value.trim();
-            if(!text) return;
+            if (!text) return;
 
             let postsDB = JSON.parse(localStorage.getItem('postsDB')) || [];
             const postIndex = postsDB.findIndex(p => p.id === postId);
-            if(postIndex > -1) {
-                if(!postsDB[postIndex].comments) postsDB[postIndex].comments = [];
+            if (postIndex > -1) {
+                if (!postsDB[postIndex].comments) postsDB[postIndex].comments = [];
                 postsDB[postIndex].comments.push({
                     author: activeUserObj.username,
                     text: text.replace(/</g, "&lt;").replace(/>/g, "&gt;") // Anti-XSS
@@ -686,7 +698,7 @@
 
         // Jalankan komentar bila di-Enter
         function handleCommentEnter(e, postId) {
-            if(e.key === 'Enter') {
+            if (e.key === 'Enter') {
                 e.preventDefault();
                 submitInlineComment(postId);
             }
@@ -697,11 +709,11 @@
             const isVisible = el.style.display === 'block';
             document.querySelectorAll('[id^="menu-"]').forEach(m => m.style.display = 'none');
             document.querySelectorAll('[id^="post-menu-"]').forEach(m => m.style.display = 'none');
-            if(!isVisible) el.style.display = 'block';
+            if (!isVisible) el.style.display = 'block';
         }
 
-        document.addEventListener('click', function(e) {
-            if(!e.target.closest('.comment-menu') && !e.target.closest('.post-menu-wrapper')) {
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.comment-menu') && !e.target.closest('.post-menu-wrapper')) {
                 document.querySelectorAll('[id^="menu-"]').forEach(m => m.style.display = 'none');
                 document.querySelectorAll('[id^="post-menu-"]').forEach(m => m.style.display = 'none');
             }
@@ -711,15 +723,15 @@
         function editPost(postId) {
             let postsDB = JSON.parse(localStorage.getItem('postsDB')) || [];
             const postIdx = postsDB.findIndex(p => p.id === postId);
-            if(postIdx > -1) {
+            if (postIdx > -1) {
                 // Ambil string mentah lawas
                 const oldContent = postsDB[postIdx].content.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
-                
+
                 // Buat Modal Tampilan melayang
                 const modalWrapper = document.createElement('div');
                 modalWrapper.id = 'editPostModal';
                 modalWrapper.style = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 25, 47, 0.4); backdrop-filter: blur(6px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity 0.2s ease-out;";
-                
+
                 modalWrapper.innerHTML = `
                     <div style="background: var(--white); width: 100%; max-width: 500px; border-radius: 16px; box-shadow: 0 32px 64px rgba(0,0,0,0.15); overflow: hidden; transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);" id="editModalBox">
                         <div style="padding: 16px 24px; border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; background: #f8fafb;">
@@ -735,27 +747,27 @@
                         </div>
                     </div>
                 `;
-                
+
                 document.body.appendChild(modalWrapper);
-                
+
                 // Mainkan animasi masuk (delay sejenak via requestAnimationFrame)
                 requestAnimationFrame(() => {
                     modalWrapper.style.opacity = '1';
                     document.getElementById('editModalBox').style.transform = 'translateY(0)';
                 });
-                
+
                 const textarea = document.getElementById('editPostTextarea');
                 textarea.value = oldContent;
                 textarea.focus();
 
                 // Aksi tombol Simpan
-                document.getElementById('saveEditBtn').onclick = function() {
+                document.getElementById('saveEditBtn').onclick = function () {
                     const newText = textarea.value;
-                    if(newText.trim() !== '') {
+                    if (newText.trim() !== '') {
                         postsDB[postIdx].content = newText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                         localStorage.setItem('postsDB', JSON.stringify(postsDB));
                         closeEditModal();
-                        renderPosts(); 
+                        renderPosts();
                     }
                 };
             }
@@ -764,7 +776,7 @@
         // Helper untuk menutup modal halus
         function closeEditModal() {
             const modalWrapper = document.getElementById('editPostModal');
-            if(modalWrapper) {
+            if (modalWrapper) {
                 modalWrapper.style.opacity = '0';
                 document.getElementById('editModalBox').style.transform = 'translateY(20px)';
                 setTimeout(() => {
@@ -775,10 +787,10 @@
 
         // Fitur Hapus Post Utama
         function deletePost(postId) {
-            if(confirm("Apakah Anda yakin ingin menghapus postingan ini secara permanen?")) {
+            if (confirm("Apakah Anda yakin ingin menghapus postingan ini secara permanen?")) {
                 let postsDB = JSON.parse(localStorage.getItem('postsDB')) || [];
                 const postIdx = postsDB.findIndex(p => p.id === postId);
-                if(postIdx > -1) {
+                if (postIdx > -1) {
                     postsDB.splice(postIdx, 1);
                     localStorage.setItem('postsDB', JSON.stringify(postsDB));
                     renderPosts();
@@ -788,10 +800,10 @@
 
         // Fitur Hapus Komentar
         function deleteComment(postId, commentIndex) {
-            if(confirm("Apakah Anda yakin ingin menghapus komentar ini? Data tidak dapat dikembalikan.")) {
+            if (confirm("Apakah Anda yakin ingin menghapus komentar ini? Data tidak dapat dikembalikan.")) {
                 let postsDB = JSON.parse(localStorage.getItem('postsDB')) || [];
                 const postIdx = postsDB.findIndex(p => p.id === postId);
-                if(postIdx > -1) {
+                if (postIdx > -1) {
                     postsDB[postIdx].comments.splice(commentIndex, 1);
                     localStorage.setItem('postsDB', JSON.stringify(postsDB));
                     renderPosts();
@@ -812,9 +824,9 @@
         function shareLink(authorName) {
             const usersDB = JSON.parse(localStorage.getItem('usersDB')) || [];
             const user = usersDB.find(u => u.username === authorName);
-            
+
             let linkToShare = window.location.origin + "/profile.html?user=" + encodeURIComponent(authorName);
-            
+
             if (user && user.socialLink && user.socialLink.trim() !== '') {
                 linkToShare = user.socialLink;
                 navigator.clipboard.writeText(linkToShare).then(() => {
@@ -827,12 +839,11 @@
                     alert('Tautan profil ' + authorName + ' berhasil disalin! Siap disebarkan ke media sosial.');
                 });
             }
-            
+
             document.querySelectorAll('[id^="menu-"]').forEach(m => m.style.display = 'none');
             document.querySelectorAll('[id^="post-menu-"]').forEach(m => m.style.display = 'none');
         }
     </script>
 </body>
+
 </html>
-
-

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -228,17 +228,31 @@
                 }));
                 
                 alert("Login Berhasil! Selamat datang kembali, " + registeredUser.username + ".");
-                window.location.href = "index.html"; // Arahkan ke beranda setelah berhasil
+                window.location.href = "posting.html"; // Arahkan ke laman postingan setelah berhasil
             } else {
                 alert("Login Gagal! Email atau Password yang Anda masukkan salah, atau Akun belum terdaftar.");
             }
         });
     </script>
 
-    <!-- CEK SUDAH LOGIN -->
+    <!-- CEK SUDAH LOGIN & SEED MOCK DB -->
     <script>
+        if (!localStorage.getItem('postsDB') || !localStorage.getItem('usersDB')) {
+            if (!localStorage.getItem('usersDB')) {
+                localStorage.setItem('usersDB', JSON.stringify([
+                    { username: "Jingliu Official", email: "admin@castorice-jingliu.com", avatar: "chibi_jingliu.png" },
+                    { username: "Castorice Admin", email: "mod@castorice-jingliu.com", avatar: "chibi_castorice.png" }
+                ]));
+            }
+            if (!localStorage.getItem('postsDB')) {
+                localStorage.setItem('postsDB', JSON.stringify([
+                    { id: 1, authorName: "Jingliu Official", content: "Selamat datang Trailblazer! Gunakan halaman ini untuk berbagi momen gacha dan artwork favoritmu. #Jingliu #Castorice", time: "1 jam yang lalu", likedBy: ["Admin"], comments: [{author: "Trailblazer", text: "Siap, terima kasih admin!"}] },
+                    { id: 2, authorName: "Castorice Admin", content: "Keajaiban Kuantum sedang menunggumu. Sudahkah kalian melakukan Warp hari ini? #GachaLife", time: "3 jam yang lalu", image: "hero_banner.png", likedBy: [], comments: [] }
+                ]));
+            }
+        }
         if(localStorage.getItem('activeUser')) {
-            window.location.replace("index.html");
+            window.location.replace("posting.html");
         }
     </script>
 </body>
