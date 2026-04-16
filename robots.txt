@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /home.html
+Allow: /read.html
+Allow: /posting.html
+
+# Prevent crawling of auth files to avoid indexing empty forms unnecessarily
+Disallow: /login.html
+Disallow: /signup.html
+
+Sitemap: https://castorice-jingliu.com/sitemap.xml

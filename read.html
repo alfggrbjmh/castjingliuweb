@@ -1,0 +1,262 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kisah Legenda - Castorice & Jingliu</title>
+    <!-- Phosphor Icons -->
+    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .read-container {
+            max-width: 900px;
+            margin: 40px auto;
+            position: relative;
+            z-index: 2;
+        }
+        .lore-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .lore-header h1 {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-teal), var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+        }
+        .lore-header p {
+            color: var(--text-muted);
+            font-size: 18px;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .lore-card {
+            background: var(--white);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.06);
+            margin-bottom: 40px;
+            border: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: row;
+        }
+        .lore-card.reverse {
+            flex-direction: row-reverse;
+        }
+        .lore-image {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        .lore-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .lore-content {
+            flex: 1.5;
+            padding: 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .lore-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+        .lore-subtitle {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--primary-teal);
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+        .lore-text {
+            color: var(--text-dark);
+            line-height: 1.8;
+            font-size: 15px;
+            margin-bottom: 24px;
+        }
+        .lore-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 24px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            padding-top: 24px;
+        }
+        .stat-item h4 {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .stat-item p {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        @media (max-width: 768px) {
+            .lore-card, .lore-card.reverse {
+                flex-direction: column;
+            }
+            .lore-image {
+                height: 300px;
+                min-height: 300px;
+            }
+            .lore-content {
+                padding: 32px 24px;
+            }
+            .lore-card.reverse {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <!-- 🚀 Favicon Optimization -->
+    <link rel="icon" type="image/png" sizes="32x32" href="chibi_jingliu.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="chibi_jingliu.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="chibi_jingliu.png">
+    <meta name="theme-color" content="#1aa39a">
+
+    <!-- 🚀 SEO & AI Overview Readiness -->
+    <meta name="description" content="Bergabunglah dengan Jejaring Komunitas Eksklusif Castorice & Jingliu. Dapatkan koleksi artwork, diskusi lore mendalam, dan status terkini dari para Trailblazer terbaik.">
+    <meta name="keywords" content="Castorice, Jingliu, Honkai Star Rail, Komunitas Trailblazer, Galeri Artwork Anime, Lore Game, Jejaring Sosial">
+    <meta name="author" content="Castorice & Jingliu Administrator">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <link rel="canonical" href="https://castorice-jingliu.com/">
+
+    <!-- 🚀 Open Graph / Facebook / WhatsApp Preview -->
+    <meta property="og:type" content="website">
+    <meta property="og:description" content="Jelajahi dunia Castorice dan Jingliu bersama ribuan Trailblazer lainnya.">
+    <meta property="og:image" content="hero_banner.png">
+    <meta property="og:site_name" content="Castorice & Jingliu Hub">
+
+    <!-- 🚀 PageSpeed / Resource Hints -->
+    <link rel="dns-prefetch" href="https://unpkg.com">
+    <link rel="dns-prefetch" href="https://ui-avatars.com">
+</head>
+<body>
+    <div class="bg-pattern"></div>
+
+    <div class="app-container">
+        <!-- HEADER -->
+        <header>
+            <div class="header-left">
+                <button class="icon-btn dark-bg" onclick="window.history.back()" title="Kembali"><i class="ph ph-arrow-left"></i></button>
+                <button class="icon-btn teal-bg" onclick="window.location.href='index.html'" title="Beranda"><i class="ph ph-house"></i></button>
+            </div>
+            <nav class="header-center">
+                <a href="index.html">Home</a>
+                <a href="home.html">Journey</a>
+                <a href="Message.html">Message</a>
+                <a href="read.html" class="active" style="color: var(--primary-teal);">Lore</a>
+            </nav>
+            <div class="header-right">
+                <!-- Tombol ini muncul default (jika visitor belum login) -->
+                <a href="login.html" class="btn btn-outline" style="text-decoration: none;">Masuk Akun</a>
+            </div>
+        </header>
+
+        <main class="read-container">
+            <div class="lore-header">
+                <h1>Tale of The Twins</h1>
+                <p>Membuka lembaran sejarah dari dua entitas paling misterius dalam perjalanan semesta. Kenali lebih dekat latar belakang dan kisah epik Jingliu serta Castorice.</p>
+            </div>
+
+            <!-- Jingliu Card -->
+            <div class="lore-card">
+                <div class="lore-image">
+                    <img src="artwork_jingliu.png" alt="Jingliu Artwork">
+                </div>
+                <div class="lore-content">
+                    <div class="lore-subtitle"><i class="ph-fill ph-snowflake"></i> Transcendent Flash</div>
+                    <div class="lore-title">Jingliu</div>
+                    <div class="lore-text">
+                        Mantan "Sword Champion" dari Luofu dan pedang terkuat di antara pasukan elit Cloud Knights. 
+                        Setelah pikirannya diselimuti bayang-bayang kehancuran karena Mara (Kutukan Keabadian), Jingliu harus menutup matanya demi menjaga apa yang tersisa dari kewarasannya. Kini ia menelusuri bintang-bintang sepi dengan tekad yang dingin dan satu tebasan pedang es purba yang sanggup membekukan konstelasi.
+                    </div>
+                    <div class="lore-stats">
+                        <div class="stat-item">
+                            <h4>Path Destiny</h4>
+                            <p>The Destruction</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4>Combat Element</h4>
+                            <p>Frost / Ice</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Castorice Card -->
+            <div class="lore-card reverse">
+                <div class="lore-image">
+                    <img src="artwork_castorice.png" alt="Castorice Artwork">
+                </div>
+                <div class="lore-content">
+                    <div class="lore-subtitle"><i class="ph-fill ph-shooting-star"></i> Cosmic Anomaly</div>
+                    <div class="lore-title">Castorice</div>
+                    <div class="lore-text">
+                        Sebuah anomali yang tak memiliki buku sejarah pasti. Hadir bagaikan bayangan cermin dari realitas mekanis, Castorice adalah entitas penyendiri yang mengarungi pecahan-pecahan kuantum ruang dan waktu. 
+                        Dengan senjata senapan laras panjang yang dikalibrasi oleh detak jantung bintang yang mati, ia melindungi sisa-sisa kedamaian bagi para pejalan kaki astral.
+                    </div>
+                    <div class="lore-stats">
+                        <div class="stat-item">
+                            <h4>Path Destiny</h4>
+                            <p>The Erudition (Nihility)</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4>Combat Element</h4>
+                            <p>Quantum Energy</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- SCRIPT BEBAS HALANGAN (TIDAK ADA PAKSAAN LOGIN) -->
+    <script>
+        // Di halaman ini TIDAK ADA barisan script 'window.location.replace("login.html")'.
+        // Siapapun (Tanpa Akun) diizinkan membaca halaman dokumentasi budaya (Lore) ini sebebas-bebasnya!
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            // Optional: Jika ternyata dia punya akun dan iseng mampir ke sini,
+            // Kita secara ramah gantikan tombol "Masuk Akun" di pojok kanan agar ia tetap betah.
+            const activeUserStr = localStorage.getItem('activeUser');
+            if(activeUserStr) {
+                const activeUser = JSON.parse(activeUserStr);
+                const headerRight = document.querySelector('.header-right');
+                if(headerRight) {
+                    headerRight.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:16px;">
+                            <a href="profile.html" style="font-weight:800; font-size:15px; color:var(--text-dark); text-decoration:none; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-teal)'" onmouseout="this.style.color='var(--text-dark)'">
+                                <i class="ph-fill ph-user-circle" style="color:var(--primary-teal); font-size:22px; vertical-align:-5px; margin-right:4px;"></i> 
+                                ${activeUser.username}
+                            </a>
+                        </div>
+                    `;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+

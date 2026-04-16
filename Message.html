@@ -1,0 +1,618 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Castorice & Jingliu - AI Chat</title>
+    <!-- Phosphor Icons -->
+    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Message/Chat Specific Styles */
+        /* Make overall page fixed height for chat */
+        html, body {
+            overflow: hidden;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            background-color: var(--white);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            min-height: 0; /* Important for flex child scrolling */
+        }
+
+        /* Sidebar Contacts */
+        .chat-sidebar {
+            width: 320px;
+            background-color: #fafdfd;
+            border-right: 1px solid rgba(106, 208, 201, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid rgba(106, 208, 201, 0.2);
+        }
+        .chat-sidebar-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .contact-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-bottom: 8px;
+        }
+        .contact-item:hover {
+            background-color: rgba(106, 208, 201, 0.1);
+        }
+        .contact-item.active {
+            background-color: var(--primary-teal);
+            color: var(--white);
+            box-shadow: 0 4px 12px rgba(106, 208, 201, 0.3);
+        }
+        .contact-item.active .contact-preview,
+        .contact-item.active .contact-time {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .contact-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.8);
+        }
+        .contact-info {
+            flex: 1;
+            overflow: hidden;
+        }
+        .contact-name {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .contact-time {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+        .contact-preview {
+            font-size: 13px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Main Chat Area */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--white);
+            position: relative;
+            min-height: 0; /* CRITICAL FOR SCROLLING */
+            overflow: hidden;
+        }
+        
+        /* Chat Content/History */
+        .chat-history {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        .chat-bubble-wrapper {
+            display: flex;
+            gap: 16px;
+            max-width: 80%;
+        }
+        .chat-bubble-wrapper.bot {
+            align-self: flex-start;
+        }
+        .chat-bubble-wrapper.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        
+        .chat-bubble-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .chat-bubble {
+            padding: 16px 20px;
+            border-radius: var(--border-radius-md);
+            font-size: 15px;
+            line-height: 1.5;
+            position: relative;
+        }
+        .bot .chat-bubble {
+            background-color: #f0f5f6;
+            color: var(--text-dark);
+            border-top-left-radius: 4px;
+        }
+        .user .chat-bubble {
+            background-color: var(--primary-teal);
+            color: var(--white);
+            border-top-right-radius: 4px;
+            box-shadow: 0 4px 12px rgba(106, 208, 201, 0.2);
+        }
+
+        .chat-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            display: block;
+        }
+        .user .chat-time {
+            color: rgba(255,255,255,0.7);
+            text-align: right;
+        }
+
+        /* Chat Input */
+        .chat-input-area {
+            padding: 24px;
+            border-top: 1px solid rgba(106, 208, 201, 0.1);
+            background-color: var(--white);
+        }
+        .chat-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: #f4f8fa;
+            border-radius: 30px;
+            padding: 8px 16px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            border: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+        .chat-input-wrapper:focus-within {
+            border-color: var(--primary-teal-light);
+        }
+        
+        .chat-input-wrapper input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            color: var(--text-dark);
+            outline: none;
+        }
+        .chat-input-wrapper input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .send-btn {
+            background-color: var(--primary-teal);
+            color: var(--white);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .send-btn:hover {
+            transform: scale(1.05);
+            background-color: var(--primary-teal-dark);
+        }
+        
+        .action-icon {
+            color: var(--text-muted);
+            font-size: 24px;
+            padding: 8px;
+            transition: color 0.2s;
+        }
+        .action-icon:hover {
+            color: var(--primary-teal);
+        }
+
+        .action-icon:hover {
+            color: var(--primary-teal);
+        }
+
+        /* Chat Page Mobile Responsive */
+        @media (max-width: 768px) {
+            .app-container {
+                height: 100dvh !important;
+                padding-bottom: 0;
+            }
+            .chat-container {
+                flex-direction: column;
+                margin-top: 12px;
+            }
+            .chat-sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid rgba(106, 208, 201, 0.2);
+            }
+            .chat-sidebar-header {
+                padding: 16px;
+            }
+            .contact-list {
+                display: flex;
+                flex-direction: row;
+                overflow-x: auto;
+                padding: 12px;
+                gap: 12px;
+            }
+            .contact-item {
+                flex-direction: column;
+                margin: 0;
+                min-width: max-content;
+                padding: 12px 20px;
+                gap: 8px;
+            }
+            .contact-info {
+                width: 100%;
+                overflow: visible;
+            }
+            .contact-name {
+                justify-content: center;
+                font-size: 13px;
+                margin-bottom: 0;
+            }
+            .contact-time, .contact-preview {
+                display: none; /* Hide preview & time to save space */
+            }
+            .chat-history {
+                padding: 16px;
+                gap: 16px;
+            }
+            .chat-bubble-wrapper {
+                max-width: 95%;
+            }
+            .chat-input-area {
+                padding: 12px;
+            }
+            .chat-input-wrapper input {
+                padding: 8px;
+            }
+            .send-btn {
+                width: 40px;
+                height: 40px;
+            }
+        }
+    </style>
+    <!-- 🚀 Favicon Optimization -->
+    <link rel="icon" type="image/png" sizes="32x32" href="chibi_jingliu.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="chibi_jingliu.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="chibi_jingliu.png">
+    <meta name="theme-color" content="#1aa39a">
+
+    <!-- 🚀 SEO & AI Overview Readiness -->
+    <meta name="description" content="Bergabunglah dengan Jejaring Komunitas Eksklusif Castorice & Jingliu. Dapatkan koleksi artwork, diskusi lore mendalam, dan status terkini dari para Trailblazer terbaik.">
+    <meta name="keywords" content="Castorice, Jingliu, Honkai Star Rail, Komunitas Trailblazer, Galeri Artwork Anime, Lore Game, Jejaring Sosial">
+    <meta name="author" content="Castorice & Jingliu Administrator">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <link rel="canonical" href="https://castorice-jingliu.com/">
+
+    <!-- 🚀 Open Graph / Facebook / WhatsApp Preview -->
+    <meta property="og:type" content="website">
+    <meta property="og:description" content="Jelajahi dunia Castorice dan Jingliu bersama ribuan Trailblazer lainnya.">
+    <meta property="og:image" content="hero_banner.png">
+    <meta property="og:site_name" content="Castorice & Jingliu Hub">
+
+    <!-- 🚀 PageSpeed / Resource Hints -->
+    <link rel="dns-prefetch" href="https://unpkg.com">
+    <link rel="dns-prefetch" href="https://ui-avatars.com">
+</head>
+<body>
+    <div class="bg-pattern"></div>
+
+    <div class="app-container" style="display:flex; flex-direction:column; height:100dvh; padding-bottom:24px;">
+        <!-- HEADER -->
+        <header style="flex-shrink: 0;">
+            <div class="header-left">
+                <button class="icon-btn dark-bg" onclick="window.location.href='profile.html'" title="My Profile"><i class="ph ph-user"></i></button>
+                <button class="icon-btn teal-bg" onclick="window.location.href='posting.html'" title="Create Post"><i class="ph ph-plus"></i></button>
+            </div>
+            <nav class="header-center">
+                <a href="index.html">Home</a>
+                <a href="home.html">Journey</a>
+                <a href="Message.html" class="active">Message</a>
+                <a href="lihatriwayat.html">History by ALFGGR</a>
+            </nav>
+            <div class="header-right">
+                <a href="login.html" class="btn btn-outline" style="text-decoration: none;">Log in</a>
+                <a href="signup.html" class="btn btn-primary" style="text-decoration: none;">Sign up</a>
+            </div>
+        </header>
+
+        <!-- CHAT INTERFACE -->
+        <main class="chat-container">
+            
+            <!-- Sidebar -->
+            <aside class="chat-sidebar">
+                <div class="chat-sidebar-header">
+                    <h2><i class="ph-fill ph-chats-circle text-pink" style="color:var(--accent-pink);"></i> Messages</h2>
+                </div>
+                <div class="contact-list">
+                    <!-- Jingliu Chat -->
+                    <div class="contact-item active" id="contactJingliu">
+                        <img src="chibi_jingliu.png" alt="Jingliu" class="contact-avatar">
+                        <div class="contact-info">
+                            <div class="contact-name">
+                                Jingliu <span class="contact-time">11:30 AM</span>
+                            </div>
+                            <div class="contact-preview" id="previewJingliu">Sudah berlatih berpedang hari ini?</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Castorice Chat -->
+                    <div class="contact-item" id="contactCastorice">
+                        <img src="chibi_castorice.png" alt="Castorice" class="contact-avatar">
+                        <div class="contact-info">
+                            <div class="contact-name">
+                                Castorice <span class="contact-time">09:10 PM</span>
+                            </div>
+                            <div class="contact-preview" id="previewCastorice">Hanya ingin mendengar suaramu.</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Chat Area -->
+            <section class="chat-main">
+                <div class="chat-history" id="chatHistory">
+                    <!-- Dynamic chat messages will be injected here -->
+                </div>
+                
+                <!-- Chat Input Frame -->
+                <div class="chat-input-area">
+                    <div class="chat-input-wrapper">
+                        <button class="action-icon"><i class="ph ph-paperclip"></i></button>
+                        <input type="text" id="chatInput" placeholder="Type a message to Jingliu...">
+                        <button class="action-icon"><i class="ph ph-smiley"></i></button>
+                        <button class="send-btn" id="btnSend"><i class="ph-bold ph-paper-plane-right"></i></button>
+                    </div>
+                </div>
+            </section>
+            
+        </main>
+    </div>
+
+    <!-- Chat Interaction Logic -->
+    <script>
+        const chatHistory = document.getElementById('chatHistory');
+        const chatInput = document.getElementById('chatInput');
+        const btnSend = document.getElementById('btnSend');
+
+        const contactJingliu = document.getElementById('contactJingliu');
+        const contactCastorice = document.getElementById('contactCastorice');
+        
+        // Data for Waifus
+        const waifuData = {
+            jingliu: {
+                name: "Jingliu",
+                avatar: "chibi_jingliu.png",
+                replies: [
+                    "Jangan biarkan hawa dingin ini membuatmu lengah.",
+                    "Menarik... Latihan berpedangku bisa menunggu sebentar.",
+                    "Bulan malam ini bersinar dengan sangat indah.",
+                    "Aku akan selalu mengingat ucapanmu.",
+                    "Mari kita lihat sejauh mana kau bisa bertahan.",
+                    "Hmph. Tentu saja.",
+                    "Jangan pernah lari dari pedangku."
+                ],
+                history: [
+                    { isUser: false, text: "Halo... Aku sudah menunggumu. Bulan malam ini sangat indah.", time: "11:28 AM" },
+                    { isUser: true, text: "Halo Jingliu! Tentu saja, aku selalu siap menemani malammu.", time: "11:29 AM" },
+                    { isUser: false, text: "Bagus. <br>Sebentar lagi aku akan pergi berlatih pedang. Temani aku... Sudah berlatih berpedang hari ini?", time: "11:30 AM" }
+                ],
+                previewElem: document.getElementById('previewJingliu')
+            },
+            castorice: {
+                name: "Castorice",
+                avatar: "chibi_castorice.png",
+                replies: [
+                    "Apakah kamu melihat sesuatu di lautan kuantum?",
+                    "Dunia ini terasa begitu tenang bersamamu.",
+                    "Kupu-kupu malam membisikkan sesuatu padaku.",
+                    "Jangan sampai tersesat dalam bayang-bayang...",
+                    "Aku selalu mengawasimu, dari kejauhan.",
+                    "Rasanya hangat...",
+                    "Kau sangat berharga."
+                ],
+                history: [
+                    { isUser: false, text: "Selamat malam... Apakah kau sedang sibuk?", time: "09:00 PM" },
+                    { isUser: true, text: "Tentu tidak untukmu, Castorice. Ada apa?", time: "09:05 PM" },
+                    { isUser: false, text: "Tidak apa-apa. Hanya ingin mendengar kabarmu dan ditemani.", time: "09:10 PM" }
+                ],
+                previewElem: document.getElementById('previewCastorice')
+            }
+        };
+
+        let currentActive = 'jingliu';
+
+        function getCurrentTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            return hours + ':' + minutes + ' ' + ampm;
+        }
+
+        function scrollToBottom() {
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        function renderMessage(text, isUser, timeString, avatarOverride) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'chat-bubble-wrapper ' + (isUser ? 'user' : 'bot');
+            
+            // Get Dynamic Username for Avatar
+            const activeUserStr = localStorage.getItem('activeUser');
+            let senderName = "Guest";
+            let customAvatar = null;
+            if(activeUserStr) {
+                const activeUserObj = JSON.parse(activeUserStr);
+                senderName = activeUserObj.username;
+                customAvatar = activeUserObj.avatar;
+            }
+
+            const activeWaifu = waifuData[currentActive];
+            const senderAvatar = isUser 
+                ? `<img src="${customAvatar ? customAvatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(senderName)}&background=1aa39a&color=fff`}" title="${senderName}" class="chat-bubble-avatar" style="object-fit:cover;">`
+                : `<img src="${avatarOverride || activeWaifu.avatar}" alt="${activeWaifu.name}" class="chat-bubble-avatar" style="object-fit:cover;">`;
+
+            // Jangan biarkan tag HTML tidak aman, tapi izinkan <br> untuk sejarah
+            let cleanText = text;
+            if(!timeString) {
+                cleanText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            }
+
+            wrapper.innerHTML = `
+                ${senderAvatar}
+                <div class="chat-bubble">
+                    ${cleanText}
+                    <span class="chat-time">${timeString || getCurrentTime()}</span>
+                </div>
+            `;
+            
+            chatHistory.appendChild(wrapper);
+            scrollToBottom();
+        }
+
+        function loadChatHistory(charKey) {
+            chatHistory.innerHTML = '';
+            currentActive = charKey;
+            chatInput.placeholder = `Type a message to ${waifuData[charKey].name}...`;
+            
+            // Loop array history lalu render tiap pesannya
+            waifuData[charKey].history.forEach(msg => {
+                renderMessage(msg.text, msg.isUser, msg.time, waifuData[charKey].avatar);
+            });
+        }
+
+        function switchContact(charKey) {
+            if (currentActive === charKey) return;
+            
+            // Update UI Sidebar selection
+            contactJingliu.classList.remove('active');
+            contactCastorice.classList.remove('active');
+            
+            if (charKey === 'jingliu') contactJingliu.classList.add('active');
+            if (charKey === 'castorice') contactCastorice.classList.add('active');
+            
+            loadChatHistory(charKey);
+        }
+
+        function handleSend() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+            
+            // 1. Munculkan pesan dari User dan simpan ke memori sementara
+            renderMessage(text, true, null);
+            waifuData[currentActive].history.push({ isUser: true, text: text, time: getCurrentTime() });
+            
+            // 2. Kosongkan input & Update preview teks di Sidebar
+            chatInput.value = '';
+            waifuData[currentActive].previewElem.textContent = text;
+
+            // 3. Simulasikan balasan bot AI (waifu) setelah delay singkat
+            const botKey = currentActive; // Mengunci karakter pas dikirim supaya tidak bocor kalau di-switch cepat
+            setTimeout(() => {
+                const replies = waifuData[botKey].replies;
+                const randomReply = replies[Math.floor(Math.random() * replies.length)];
+                
+                // Simpan ke history dan render jika bot yang membalas masih jadi room yang aktif
+                waifuData[botKey].history.push({ isUser: false, text: randomReply, time: getCurrentTime() });
+                waifuData[botKey].previewElem.textContent = randomReply;
+                
+                if (currentActive === botKey) {
+                    renderMessage(randomReply, false, null);
+                }
+            }, Math.random() * 1000 + 1000); // Delay antara 1 - 2 detik
+        }
+
+        // Jalankan handleSend saat tombol di klik
+        btnSend.addEventListener('click', handleSend);
+
+        // Jalankan handleSend saat enter di tekan pada keyboard
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleSend();
+            }
+        });
+
+        // Event listener sidebar switch contact
+        contactJingliu.addEventListener('click', () => switchContact('jingliu'));
+        contactCastorice.addEventListener('click', () => switchContact('castorice'));
+
+        // Load chat Jingliu saat pertama kali diload
+        window.onload = () => {
+            loadChatHistory('jingliu');
+        };
+    </script>
+    <!-- AUTH STATE CHECK -->
+    <script>
+        // Paksa Login: Proteksi Halaman
+        if(!localStorage.getItem('activeUser')) {
+            window.location.replace("login.html");
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const activeUserStr = localStorage.getItem('activeUser');
+            if(activeUserStr) {
+                const activeUser = JSON.parse(activeUserStr);
+                const headerRight = document.querySelector('.header-right');
+                if(headerRight) {
+                    headerRight.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:16px;">
+                            <a href="profile.html" style="font-weight:800; font-size:15px; color:var(--text-dark); text-decoration:none; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-teal)'" onmouseout="this.style.color='var(--text-dark)'">
+                                <i class="ph-fill ph-user-circle" style="color:var(--primary-teal); font-size:22px; vertical-align:-5px; margin-right:4px;"></i> 
+                                ${activeUser.username}
+                            </a>
+                            <button onclick="logout()" class="btn btn-outline" style="padding: 10px 24px; font-size: 14px; border-color: rgba(0,0,0,0.1);">Log out</button>
+                        </div>
+                    `;
+                }
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('activeUser');
+            window.location.href = "login.html";
+        }
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,247 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Castorice & Jingliu - Log In</title>
+    <!-- Phosphor Icons -->
+    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .auth-container {
+            min-height: calc(100vh - 120px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        .auth-card {
+            background: var(--white);
+            border-radius: var(--border-radius-lg);
+            box-shadow: 0 24px 48px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.6);
+            /* Membalik arah sisi flex agar gambar login di kiri, form di kanan */
+            flex-direction: row-reverse;
+        }
+        .auth-image {
+            flex: 1.2;
+            position: relative;
+            background: var(--primary-teal-dark);
+            display: none;
+        }
+        .auth-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+            transform: scaleX(-1); /* Efek mirror gambar biar unik */
+        }
+        .auth-image-text {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            right: 40px;
+            color: var(--white);
+        }
+        .auth-image-text h2 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            line-height: 1.2;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .auth-form-wrapper {
+            flex: 1;
+            padding: 48px;
+            background: var(--white);
+        }
+        .auth-form-wrapper h2 {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+        .auth-form-wrapper p {
+            color: var(--text-muted);
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: var(--border-radius-md);
+            border: 1px solid rgba(0,0,0,0.1);
+            background: #f8fafb;
+            font-family: inherit;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-teal);
+            box-shadow: 0 0 0 4px rgba(106, 208, 201, 0.1);
+            background: var(--white);
+        }
+        .btn-auth {
+            width: 100%;
+            padding: 16px;
+            border-radius: var(--border-radius-md);
+            font-weight: 700;
+            font-size: 16px;
+            margin-top: 8px;
+            box-shadow: 0 8px 16px rgba(106, 208, 201, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-auth:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(106, 208, 201, 0.3);
+        }
+        @media (min-width: 900px) {
+            .auth-image { display: block; }
+        }
+        @media (max-width: 768px) {
+            .auth-form-wrapper { padding: 32px 24px; }
+        }
+    </style>
+    <!-- 🚀 Favicon Optimization -->
+    <link rel="icon" type="image/png" sizes="32x32" href="chibi_jingliu.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="chibi_jingliu.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="chibi_jingliu.png">
+    <meta name="theme-color" content="#1aa39a">
+
+    <!-- 🚀 SEO & AI Overview Readiness -->
+    <meta name="description" content="Bergabunglah dengan Jejaring Komunitas Eksklusif Castorice & Jingliu. Dapatkan koleksi artwork, diskusi lore mendalam, dan status terkini dari para Trailblazer terbaik.">
+    <meta name="keywords" content="Castorice, Jingliu, Honkai Star Rail, Komunitas Trailblazer, Galeri Artwork Anime, Lore Game, Jejaring Sosial">
+    <meta name="author" content="Castorice & Jingliu Administrator">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <link rel="canonical" href="https://castorice-jingliu.com/">
+
+    <!-- 🚀 Open Graph / Facebook / WhatsApp Preview -->
+    <meta property="og:type" content="website">
+    <meta property="og:description" content="Jelajahi dunia Castorice dan Jingliu bersama ribuan Trailblazer lainnya.">
+    <meta property="og:image" content="hero_banner.png">
+    <meta property="og:site_name" content="Castorice & Jingliu Hub">
+
+    <!-- 🚀 PageSpeed / Resource Hints -->
+    <link rel="dns-prefetch" href="https://unpkg.com">
+    <link rel="dns-prefetch" href="https://ui-avatars.com">
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="app-container">
+        <!-- HEADER -->
+        <header>
+            <div class="header-left">
+                <button class="icon-btn dark-bg" onclick="window.location.href='profile.html'" title="My Profile"><i class="ph ph-user"></i></button>
+                <button class="icon-btn teal-bg" onclick="window.location.href='posting.html'" title="Create Post"><i class="ph ph-plus"></i></button>
+            </div>
+            <nav class="header-center">
+                <a href="index.html">Home</a>
+                <a href="home.html">Journey</a>
+                <a href="Message.html">Message</a>
+                <a href="lihatriwayat.html">History by ALFGGR</a>
+            </nav>
+            <div class="header-right">
+                <a href="login.html" class="btn btn-outline" style="text-decoration: none;">Log in</a>
+                <a href="signup.html" class="btn btn-primary" style="text-decoration: none;">Sign up</a>
+            </div>
+        </header>
+
+        <main class="auth-container">
+            <div class="auth-card">
+                <div class="auth-form-wrapper">
+                    <h2>Welcome Back!</h2>
+                    <p>Silakan masuk untuk akses langsung.</p>
+
+                    <!-- EMAIL LOGIN FORM -->
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" id="logEmail" class="form-input" placeholder="nama@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <label class="form-label" style="margin-bottom: 0;">Password</label>
+                                <a href="#" style="font-size: 13px; color: var(--primary-teal); text-decoration: none; font-weight: 600;">Lupa password?</a>
+                            </div>
+                            <input type="password" id="logPassword" class="form-input" placeholder="Harus 6 katahuruf" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-auth">Log In System</button>
+                    </form>
+                    
+                    <p style="text-align: center; margin-top: 24px; font-size: 14px; margin-bottom: 0;">
+                        Belum punya akun? <a href="signup.html" style="color: var(--primary-teal); font-weight: 700; text-decoration: none;">Sign Up di sini</a>
+                    </p>
+                </div>
+                
+                <!-- Desktop Hero Image Split (Di sisi Kiri karena row-reverse) -->
+                <div class="auth-image">
+                    <img src="artwork_castorice.png" alt="Login Banner">
+                    <div class="auth-image-text">
+                        <div style="display:inline-flex; align-items:center; gap:6px; background: rgba(0,0,0,0.5); padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 12px; letter-spacing: 1px;">
+                            <i class="ph-fill ph-lock-key" style="color:var(--accent-pink);"></i> SECURE LOGIN
+                        </div>
+                        <h2>Lanjutkan Cerita<br>Bintang Anda.</h2>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- SCRIPT DATABASE MOCK UNTUK LOGIN -->
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Cegah reload otomatis
+            
+            const emailInput = document.getElementById('logEmail').value.trim();
+            const passInput = document.getElementById('logPassword').value;
+
+            // Baca database dari localhost (simulasi backend)
+            let usersDB = JSON.parse(localStorage.getItem('usersDB')) || [];
+            
+            // Cocokkan data user
+            const registeredUser = usersDB.find(user => user.email === emailInput && user.password === passInput);
+            
+            if (registeredUser) {
+                // Simpan token login (session)
+                localStorage.setItem('activeUser', JSON.stringify({
+                    username: registeredUser.username,
+                    email: registeredUser.email
+                }));
+                
+                alert("Login Berhasil! Selamat datang kembali, " + registeredUser.username + ".");
+                window.location.href = "index.html"; // Arahkan ke beranda setelah berhasil
+            } else {
+                alert("Login Gagal! Email atau Password yang Anda masukkan salah, atau Akun belum terdaftar.");
+            }
+        });
+    </script>
+
+    <!-- CEK SUDAH LOGIN -->
+    <script>
+        if(localStorage.getItem('activeUser')) {
+            window.location.replace("index.html");
+        }
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,389 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Castorice & Jingliu - Home</title>
+    <!-- Phosphor Icons -->
+    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Additional Layout Specific for Home Page */
+        .home-hero {
+            position: relative;
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+            box-shadow: var(--card-shadow);
+        }
+        .home-hero img {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+        .home-hero-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(to right, rgba(116, 216, 209, 0.9) 0%, rgba(106, 208, 201, 0.4) 100%);
+            z-index: 2;
+        }
+        .home-hero-content {
+            position: relative;
+            z-index: 3;
+            text-align: left;
+            width: 100%;
+            padding: 48px;
+            color: var(--white);
+        }
+        .home-hero-content h1 {
+            font-size: 56px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            color: var(--white);
+            text-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .home-hero-content p {
+            font-size: 18px;
+            max-width: 500px;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        .feature-card {
+            background-color: var(--white);
+            padding: 32px;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--card-shadow);
+            text-align: center;
+            transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .feature-card:hover {
+            transform: translateY(-8px);
+        }
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            background-color: rgba(106, 208, 201, 0.1);
+            color: var(--primary-teal);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        .feature-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .about-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            background-color: var(--white);
+            border-radius: var(--border-radius-lg);
+            padding: 40px;
+            box-shadow: var(--card-shadow);
+        }
+        .about-text h2 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+        }
+        .about-text p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        .about-images {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            padding-bottom: 16px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-teal) transparent;
+        }
+        .about-images::-webkit-scrollbar {
+            height: 6px;
+        }
+        .about-images::-webkit-scrollbar-thumb {
+            background-color: var(--primary-teal);
+            border-radius: 8px;
+        }
+        .about-images img {
+            width: 100%;
+            flex: 0 0 85%;
+            scroll-snap-align: center;
+            border-radius: var(--border-radius-md);
+            object-fit: cover;
+            aspect-ratio: 4/5;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .milestone-section {
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+        .milestone-section h2 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .milestone-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+        .milestone-card {
+            background-color: var(--white);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s;
+        }
+        .milestone-card:hover {
+            transform: translateY(-5px);
+        }
+        .milestone-card img {
+            width: 40%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .milestone-info {
+            padding: 32px;
+            width: 60%;
+        }
+        .milestone-info h3 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-dark);
+        }
+        .date-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: rgba(106, 208, 201, 0.15);
+            color: var(--primary-teal-dark);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        .date-badge i {
+            font-size: 18px;
+        }
+        .milestone-info p {
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Home Page Mobile Responsive */
+        @media (max-width: 768px) {
+            .home-hero-content {
+                padding: 24px;
+            }
+            .home-hero-content h1 {
+                font-size: 36px;
+            }
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            .about-section {
+                grid-template-columns: 1fr;
+                padding: 24px;
+                gap: 24px;
+            }
+            .about-images {
+                padding-bottom: 16px;
+            }
+            .about-images img {
+                flex: 0 0 90%;
+            }
+            .about-images img:nth-child(2) {
+                transform: none !important;
+            }
+            .milestone-grid {
+                grid-template-columns: 1fr;
+            }
+            .milestone-card {
+                flex-direction: column;
+            }
+            .milestone-card img {
+                width: 100%;
+                height: 250px;
+            }
+            .milestone-info {
+                width: 100%;
+                padding: 24px;
+            }
+        }
+    </style>
+    <!-- ðŸš€ Favicon Optimization -->
+    <link rel="icon" type="image/png" sizes="32x32" href="chibi_jingliu.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="chibi_jingliu.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="chibi_jingliu.png">
+    <meta name="theme-color" content="#1aa39a">
+
+    <!-- ðŸš€ SEO & AI Overview Readiness -->
+    <meta name="description" content="Bergabunglah dengan Jejaring Komunitas Eksklusif Castorice & Jingliu. Dapatkan koleksi artwork, diskusi lore mendalam, dan status terkini dari para Trailblazer terbaik.">
+    <meta name="keywords" content="Castorice, Jingliu, Honkai Star Rail, Komunitas Trailblazer, Galeri Artwork Anime, Lore Game, Jejaring Sosial">
+    <meta name="author" content="Castorice & Jingliu Administrator">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <link rel="canonical" href="https://castorice-jingliu.com/">
+
+    <!-- ðŸš€ Open Graph / Facebook / WhatsApp Preview -->
+    <meta property="og:type" content="website">
+    <meta property="og:description" content="Jelajahi dunia Castorice dan Jingliu bersama ribuan Trailblazer lainnya.">
+    <meta property="og:image" content="hero_banner.png">
+    <meta property="og:site_name" content="Castorice & Jingliu Hub">
+
+    <!-- ðŸš€ PageSpeed / Resource Hints -->
+    <link rel="dns-prefetch" href="https://unpkg.com">
+    <link rel="dns-prefetch" href="https://ui-avatars.com">
+</head>
+<body>
+    <div class="bg-pattern"></div>
+
+    <div class="app-container">
+        <!-- HEADER -->
+        <header>
+            <div class="header-left">
+                <button class="icon-btn dark-bg" onclick="window.location.href='profile.html'" title="My Profile"><i class="ph ph-user"></i></button>
+                <button class="icon-btn teal-bg" onclick="window.location.href='posting.html'" title="Create Post"><i class="ph ph-plus"></i></button>
+            </div>
+            <nav class="header-center">
+                <a href="index.html">Home</a>
+                <a href="home.html" class="active">Journey</a>
+                <a href="Message.html">Message</a>
+                <a href="lihatriwayat.html">History by ALFGGR</a>
+            </nav>
+            <div class="header-right">
+                <a href="login.html" class="btn btn-outline" style="text-decoration: none;">Log in</a>
+                <a href="signup.html" class="btn btn-primary" style="text-decoration: none;">Sign up</a>
+            </div>
+        </header>
+
+        <!-- LARGE HERO BANNER -->
+        <section class="home-hero">
+            <img src="hero_banner.png" alt="Home Banner">
+            <div class="home-hero-overlay"></div>
+            <div class="home-hero-content">
+                <div class="hero-logo text-pink" style="background: var(--white);">
+                    <i class="ph-fill ph-sparkle"></i> Featured Spot
+                </div>
+                <h1>Discover The Story</h1>
+                <p>Immerse yourself into the beautiful universe of Castorice and Jingliu. A place to explore stunning visual arts, deep lore, and community creations.</p>
+                <button class="btn btn-white" style="padding: 14px 32px; font-size: 16px;">Explore Now</button>
+            </div>
+        </section>
+
+        <!-- ABOUT SECTION -->
+        <section class="about-section">
+            <div class="about-text">
+                <h2>Hasil Gacha 2 Foto by ALFGGR</h2>
+                <p>Ini adalah dokumentasi bersejarah di mana keberuntungan gacha membawa Jingliu dan Castorice ke dalam party kita! Kedua foto mahakarya seni ini melambangkan pencapaian dan dedikasi pull gacha yang luar biasa.</p>
+                <p>Berawal dari tabungan tiket, kini pameran visual mewah dari dua karakter yang paling sering digunakan ini resmi menjadi milik kita.</p>
+                <a href="lihatriwayat.html" class="btn btn-primary" style="margin-top: 16px; display: inline-block; text-decoration: none;">Lihat Riwayat Warp</a>
+            </div>
+            <div class="about-images">
+                <img src="artwork_jingliu.png" alt="Jingliu Spotlight">
+                <img src="artwork_castorice.png" alt="Castorice Spotlight">
+            </div>
+        </section>
+
+        <!-- MILESTONE SECTION -->
+        <section class="milestone-section">
+            <h2>Our Journey Collection</h2>
+            <div class="milestone-grid">
+                <div class="milestone-card">
+                    <img src="artwork_jingliu.png" alt="Jingliu">
+                    <div class="milestone-info">
+                        <h3>Jingliu</h3>
+                        <div class="date-badge"><i class="ph-bold ph-calendar"></i> 17 April 2024</div>
+                        <p>Karakter luar biasa ini berhasil didapatkan pada 17 April 2024. Kehadirannya melambangkan awal mula perjalanan koleksi yang indah.</p>
+                    </div>
+                </div>
+                <div class="milestone-card">
+                    <img src="artwork_castorice.png" alt="Castorice">
+                    <div class="milestone-info">
+                        <h3>Castorice</h3>
+                        <div class="date-badge"><i class="ph-bold ph-calendar"></i> 17 April 2025</div>
+                        <p>Tepat setahun kemudian, pada 17 April 2025, Castorice tergabung ke dalam party. Melengkapi perjalanan penuh keajaiban kita!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- AUTH STATE CHECK -->
+    <script>
+        // Paksa Login: Proteksi Halaman
+        if(!localStorage.getItem('activeUser')) {
+            window.location.replace("login.html");
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const activeUserStr = localStorage.getItem('activeUser');
+            if(activeUserStr) {
+                const activeUser = JSON.parse(activeUserStr);
+                const headerRight = document.querySelector('.header-right');
+                if(headerRight) {
+                    headerRight.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:16px;">
+                            <a href="profile.html" style="font-weight:800; font-size:15px; color:var(--text-dark); text-decoration:none; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-teal)'" onmouseout="this.style.color='var(--text-dark)'">
+                                <i class="ph-fill ph-user-circle" style="color:var(--primary-teal); font-size:22px; vertical-align:-5px; margin-right:4px;"></i> 
+                                ${activeUser.username}
+                            </a>
+                            <button onclick="logout()" class="btn btn-outline" style="padding: 10px 24px; font-size: 14px; border-color: rgba(0,0,0,0.1);">Log out</button>
+                        </div>
+                    `;
+                }
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('activeUser');
+            window.location.href = "login.html";
+        }
+    </script>
+</body>
+</html>
+
+

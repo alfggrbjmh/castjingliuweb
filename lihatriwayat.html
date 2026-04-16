@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Castorice & Jingliu - Riwayat Gacha</title>
+    <!-- Phosphor Icons -->
+    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .warp-hero {
+            background: linear-gradient(135deg, #1c1c2e 0%, #2b334d 100%);
+            border-radius: var(--border-radius-lg);
+            padding: 60px 40px;
+            color: var(--white);
+            text-align: center;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.2);
+            margin-bottom: 48px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .warp-hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, rgba(106, 208, 201, 0.2) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .warp-hero h1 {
+            font-size: 40px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(90deg, #ffd700, #ffeb85);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 12px rgba(255,215,0,0.2);
+        }
+        
+        .gacha-results {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 56px;
+        }
+        .gacha-card {
+            background: linear-gradient(to bottom, #2a2536, #1f1b29);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            padding: 16px;
+            border-radius: var(--border-radius-lg);
+            position: relative;
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .gacha-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 24px 48px rgba(212, 175, 55, 0.25);
+            border-color: #ffd700;
+        }
+        .star-rating {
+            color: #ffd700;
+            font-size: 24px;
+            margin-bottom: 16px;
+            margin-top: 8px;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            filter: drop-shadow(0 0 4px rgba(255,215,0,0.5));
+        }
+        .gacha-image-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+        }
+        .gacha-image-wrapper::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; width: 100%; height: 50%;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            pointer-events: none;
+        }
+        .gacha-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .gacha-card:hover .gacha-image {
+            transform: scale(1.1);
+        }
+        .gacha-info {
+            text-align: center;
+            margin-top: 20px;
+            padding-bottom: 12px;
+        }
+        .gacha-info h3 {
+            color: #fff;
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        .gacha-path {
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 6px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .history-table-container {
+            background: var(--white);
+            border-radius: var(--border-radius-lg);
+            padding: 40px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.06);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        .history-table-container h2 {
+            margin-bottom: 32px;
+            font-weight: 800;
+            color: var(--text-dark);
+            text-align: center;
+            font-size: 28px;
+        }
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        th, td {
+            padding: 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            background-color: #f8fbfa;
+        }
+        tr:hover td {
+            background-color: rgba(106, 208, 201, 0.05);
+        }
+        .row-5star td {
+            background-color: rgba(212, 175, 55, 0.06) !important;
+            font-weight: 700;
+            color: #b8860b;
+        }
+        .row-5star:hover td {
+            background-color: rgba(212, 175, 55, 0.12) !important;
+        }
+        .pity-count {
+            display: inline-block;
+            background: var(--primary-teal);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        /* 16:9 ANNIVERSARY GACHA SECTION */
+        .anniversary-section {
+            margin-top: 56px;
+            margin-bottom: 56px;
+            padding-top: 56px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+        .anniversary-section h2 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-weight: 800;
+            font-size: 36px;
+            color: var(--text-dark);
+        }
+        .anniversary-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 48px;
+        }
+        .anni-card {
+            background: var(--white);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.06);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+        .anni-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 24px 48px rgba(0,0,0,0.1);
+        }
+        .anni-image-box {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9; /* Explicit 16:9 ratio requested */
+            overflow: hidden;
+            background: #000;
+        }
+        .anni-image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+        .anni-card:hover .anni-image-box img {
+            transform: scale(1.05);
+        }
+        .anni-overlay {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            z-index: 2;
+        }
+        .anni-badge {
+            background: linear-gradient(135deg, #ffd700, #ffa500);
+            color: #4a3f00;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 15px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.6);
+            display: inline-flex;
+            align-items: center;
+            letter-spacing: 0.5px;
+        }
+        .anni-badge::before {
+            content: 'â˜…';
+            margin-right: 6px;
+            font-size: 18px;
+        }
+        .anni-text {
+            padding: 32px 40px;
+        }
+        .anni-text h3 {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+        .anni-text p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 17px;
+        }
+        
+        @media (max-width: 768px) {
+            .gacha-results {
+                grid-template-columns: 1fr;
+            }
+            .warp-hero h1 {
+                font-size: 32px;
+            }
+            .history-table-container {
+                padding: 24px 16px;
+            }
+        }
+    </style>
+    <!-- 🚀 Favicon Optimization -->
+    <link rel="icon" type="image/png" sizes="32x32" href="chibi_jingliu.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="chibi_jingliu.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="chibi_jingliu.png">
+    <meta name="theme-color" content="#1aa39a">
+
+    <!-- 🚀 SEO & AI Overview Readiness -->
+    <meta name="description" content="Bergabunglah dengan Jejaring Komunitas Eksklusif Castorice & Jingliu. Dapatkan koleksi artwork, diskusi lore mendalam, dan status terkini dari para Trailblazer terbaik.">
+    <meta name="keywords" content="Castorice, Jingliu, Honkai Star Rail, Komunitas Trailblazer, Galeri Artwork Anime, Lore Game, Jejaring Sosial">
+    <meta name="author" content="Castorice & Jingliu Administrator">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <link rel="canonical" href="https://castorice-jingliu.com/">
+
+    <!-- 🚀 Open Graph / Facebook / WhatsApp Preview -->
+    <meta property="og:type" content="website">
+    <meta property="og:description" content="Jelajahi dunia Castorice dan Jingliu bersama ribuan Trailblazer lainnya.">
+    <meta property="og:image" content="hero_banner.png">
+    <meta property="og:site_name" content="Castorice & Jingliu Hub">
+
+    <!-- 🚀 PageSpeed / Resource Hints -->
+    <link rel="dns-prefetch" href="https://unpkg.com">
+    <link rel="dns-prefetch" href="https://ui-avatars.com">
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="app-container">
+        <!-- HEADER -->
+        <header>
+            <div class="header-left">
+                <button class="icon-btn dark-bg" onclick="window.location.href='profile.html'" title="My Profile"><i class="ph ph-user"></i></button>
+                <button class="icon-btn teal-bg" onclick="window.location.href='posting.html'" title="Create Post"><i class="ph ph-plus"></i></button>
+            </div>
+            <nav class="header-center">
+                <a href="index.html">Home</a>
+                <a href="home.html">Journey</a>
+                <a href="Message.html">Message</a>
+                <a href="lihatriwayat.html" class="active">History by ALFGGR</a>
+            </nav>
+            <div class="header-right">
+                <a href="login.html" class="btn btn-outline" style="text-decoration: none;">Log in</a>
+                <a href="signup.html" class="btn btn-primary" style="text-decoration: none;">Sign up</a>
+            </div>
+        </header>
+
+        <section class="warp-hero">
+            <h1>Hasil Gacha 2 Karakter List</h1>
+            <p style="color: rgba(255,255,255,0.8); font-size: 18px; max-width: 600px; margin: 0 auto;">Pusat arsip keberuntungan. Mencatat momen legendaris turunnya The Sword Champion dan sang penguasa lautan Kuantum.</p>
+        </section>
+
+        <!-- HASIL 2 FOTO GACHA -->
+        <div class="gacha-results">
+            <!-- JINGLIU -->
+            <div class="gacha-card">
+                <div class="star-rating">
+                    <i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i>
+                </div>
+                <div class="gacha-image-wrapper">
+                    <img src="artwork_jingliu.png" alt="Jingliu Pull" class="gacha-image">
+                </div>
+                <div class="gacha-info">
+                    <h3>Jingliu</h3>
+                    <div class="gacha-path">Path: Destruction | Ice</div>
+                </div>
+            </div>
+
+            <!-- CASTORICE -->
+            <div class="gacha-card">
+                <div class="star-rating">
+                    <i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i>
+                </div>
+                <div class="gacha-image-wrapper">
+                    <img src="artwork_castorice.png" alt="Castorice Pull" class="gacha-image">
+                </div>
+                <div class="gacha-info">
+                    <h3>Castorice</h3>
+                    <div class="gacha-path">Path: Erudition | Quantum</div>
+                </div>
+            </div>
+        </div>
+        <!-- ANNIVERSARY GACHA 16:9 PHOTOS -->
+        <div class="anniversary-section">
+            <h2>Memori Indah Hasil Warp</h2>
+            <div class="anniversary-cards">
+                
+                <!-- JINGLIU 2 YEARS -->
+                <div class="anni-card">
+                    <div class="anni-image-box">
+                        <img src="artwork_jingliu.png" alt="Jingliu 16:9 Gacha Pull">
+                        <div class="anni-overlay">
+                            <span class="anni-badge">2 Tahun Bersama</span>
+                        </div>
+                    </div>
+                    <div class="anni-text">
+                        <h3>Kedatangan Sang Pedang Es (Jingliu)</h3>
+                        <p><strong>17 April 2024</strong>  Sebuah momen gacha epik yang akan selalu dikenang. Layar bersinar keemasan, menghadirkan Jingliu. Kini, sudah 2 tahun sejak takdir mengikat sang Champion of the Luofu ini dengan perjalanan kita!</p>
+                    </div>
+                </div>
+
+                <!-- CASTORICE 1 YEAR -->
+                <div class="anni-card">
+                    <div class="anni-image-box">
+                        <img src="artwork_castorice.png" alt="Castorice 16:9 Gacha Pull">
+                        <div class="anni-overlay">
+                            <span class="anni-badge">1 Tahun Bersama</span>
+                        </div>
+                    </div>
+                    <div class="anni-text">
+                        <h3>Keajaiban Kuantum (Castorice)</h3>
+                        <p><strong>17 April 2025</strong>Menggenapkan kombinasi party yang sempurna. Setahun penuh telah berlalu sejak keajaiban lautan Kuantum mengantarkan Castorice ke sisi kita dengan kilauan 5-bintang yang tiada duanya.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- AUTH STATE CHECK -->
+    <script>
+        // Paksa Login: Proteksi Halaman
+        if(!localStorage.getItem('activeUser')) {
+            window.location.replace("login.html");
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const activeUserStr = localStorage.getItem('activeUser');
+            if(activeUserStr) {
+                const activeUser = JSON.parse(activeUserStr);
+                const headerRight = document.querySelector('.header-right');
+                if(headerRight) {
+                    headerRight.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:16px;">
+                            <a href="profile.html" style="font-weight:800; font-size:15px; color:var(--text-dark); text-decoration:none; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-teal)'" onmouseout="this.style.color='var(--text-dark)'">
+                                <i class="ph-fill ph-user-circle" style="color:var(--primary-teal); font-size:22px; vertical-align:-5px; margin-right:4px;"></i> 
+                                ${activeUser.username}
+                            </a>
+                            <button onclick="logout()" class="btn btn-outline" style="padding: 10px 24px; font-size: 14px; border-color: rgba(0,0,0,0.1);">Log out</button>
+                        </div>
+                    `;
+                }
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('activeUser');
+            window.location.href = "login.html";
+        }
+    </script>
+</body>
+</html>
+
+
