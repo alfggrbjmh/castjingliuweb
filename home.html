@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -354,15 +354,13 @@
 
     <!-- AUTH STATE CHECK -->
     <script>
-        // Paksa Login: Proteksi Halaman
-        if(!localStorage.getItem('activeUser')) {
-            window.location.replace("login.html");
-        }
+        // Sesi Aktif Check (Opsional untuk halaman publik)
+        const activeUserStr = localStorage.getItem('activeUser');
+        const activeUserObj = activeUserStr ? JSON.parse(activeUserStr) : null;
 
         document.addEventListener("DOMContentLoaded", function() {
-            const activeUserStr = localStorage.getItem('activeUser');
-            if(activeUserStr) {
-                const activeUser = JSON.parse(activeUserStr);
+            if(activeUserObj) {
+                const activeUser = activeUserObj;
                 const headerRight = document.querySelector('.header-right');
                 if(headerRight) {
                     headerRight.innerHTML = `
@@ -375,6 +373,22 @@
                         </div>
                     `;
                 }
+                
+                // Show Create Post button if logged in
+                const createBtn = document.querySelector('.icon-btn.teal-bg');
+                if(createBtn) createBtn.style.display = 'flex';
+            } else {
+                // Not logged in: Show auth buttons
+                const headerRight = document.querySelector('.header-right');
+                if(headerRight) {
+                    headerRight.innerHTML = `
+                        <a href="login.html" class="btn btn-outline" style="text-decoration: none;">Log in</a>
+                        <a href="signup.html" class="btn btn-primary" style="text-decoration: none;">Sign up</a>
+                    `;
+                }
+                // Hide Create Post button for guest
+                const createBtn = document.querySelector('.icon-btn.teal-bg');
+                if(createBtn) createBtn.style.display = 'none';
             }
         });
 

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -49,14 +49,15 @@
                 <a href="index.html" class="active">Home</a>
                 <a href="home.html">Journey</a>
                 <a href="Message.html">Message</a>
-                <a href="lihatriwayat.html">History by ALFGGR</a>
+                <a href="lihatriwayat.html">History By ALFGGR</a>
             </nav>
             <div class="header-right">
                 <a href="login.html" class="btn btn-outline" style="text-decoration: none;">Log in</a>
                 <a href="signup.html" class="btn btn-primary" style="text-decoration: none;">Sign up</a>
             </div>
         </header>
-
+        
+        <main>
         <!-- HERO SECTION -->
         <section class="hero">
             <div class="hero-content">
@@ -82,7 +83,7 @@
             <!-- COLUMN 4: Posting History -->
             <section class="posting-history-section" style="grid-column: 1 / -1; margin-top: 40px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 40px; padding-bottom: 40px;">
                 <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                    <h2 style="font-size: 24px; font-weight: 800; color: var(--text-dark);">Timeline Komunitas Terbaru Jingliu&Castorice</h2>
+                    <h2 style="font-size: 24px; font-weight: 800; color: var(--text-dark);">Timeline Komunitas Terbaru Jingliu &amp; Castorice</h2>
                     <a href="posting.html" style="color: var(--primary-teal); font-weight: 700; text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 6px;">Ke Halaman Komunitas <i class="ph-bold ph-arrow-right"></i></a>
                 </div>
                 
@@ -95,10 +96,9 @@
 
     <!-- AUTH STATE CHECK -->
     <script>
-        // Paksa Login: Proteksi Halaman
-        if(!localStorage.getItem('activeUser')) {
-            window.location.replace("login.html");
-        }
+        // Sesi Aktif Check (Opsional untuk halaman publik)
+        const activeUserStr = localStorage.getItem('activeUser');
+        const activeUserObj = activeUserStr ? JSON.parse(activeUserStr) : null;
 
         document.addEventListener("DOMContentLoaded", function() {
             const activeUserStr = localStorage.getItem('activeUser');
@@ -116,11 +116,62 @@
                         </div>
                     `;
                 }
-
-                // Render History Post di Homepage
-                renderIndexPosts();
+                
+                // Show Create Post button if logged in
+                const createBtn = document.querySelector('.icon-btn.teal-bg');
+                if(createBtn) createBtn.style.display = 'flex';
+            } else {
+                // Not logged in: Show auth buttons
+                const headerRight = document.querySelector('.header-right');
+                if(headerRight) {
+                    headerRight.innerHTML = `
+                        <a href="login.html" class="btn btn-outline" style="text-decoration: none;">Log in</a>
+                        <a href="signup.html" class="btn btn-primary" style="text-decoration: none;">Sign up</a>
+                    `;
+                }
+                // Hide Create Post button for guest
+                const createBtn = document.querySelector('.icon-btn.teal-bg');
+                if(createBtn) createBtn.style.display = 'none';
             }
+            
+            // Seed initial data if empty
+            seedDatabase();
+
+            // Render History Post di Homepage (Public)
+            renderIndexPosts();
         });
+
+        function seedDatabase() {
+            if (!localStorage.getItem('postsDB')) {
+                const initialPosts = [
+                    {
+                        id: 1,
+                        authorName: "Jingliu Official",
+                        content: "Selamat datang Trailblazer! Gunakan halaman ini untuk berbagi momen gacha dan artwork favoritmu. #Jingliu #Castorice",
+                        time: "1 jam yang lalu",
+                        likedBy: ["Admin"],
+                        comments: [{author: "Trailblazer", text: "Siap, terima kasih admin!"}]
+                    },
+                    {
+                        id: 2,
+                        authorName: "Castorice Admin",
+                        content: "Keajaiban Kuantum sedang menunggumu. Sudahkah kalian melakukan Warp hari ini? #GachaLife",
+                        time: "3 jam yang lalu",
+                        image: "hero_banner.png",
+                        likedBy: [],
+                        comments: []
+                    }
+                ];
+                localStorage.setItem('postsDB', JSON.stringify(initialPosts));
+            }
+            if (!localStorage.getItem('usersDB')) {
+                const initialUsers = [
+                    { username: "Jingliu Official", email: "admin@castorice-jingliu.com", avatar: "chibi_jingliu.png" },
+                    { username: "Castorice Admin", email: "mod@castorice-jingliu.com", avatar: "chibi_castorice.png" }
+                ];
+                localStorage.setItem('usersDB', JSON.stringify(initialUsers));
+            }
+        }
 
         function logout() {
             localStorage.removeItem('activeUser');

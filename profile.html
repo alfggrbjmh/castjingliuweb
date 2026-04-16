@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -193,6 +193,12 @@
                             <div class="info-label">Riwayat Posting</div>
                             <div class="info-value" id="displayPostCount" style="color: var(--primary-teal);">0 Postingan</div>
                         </div>
+                        <div class="info-card" style="grid-column: 1 / -1;">
+                            <div class="info-label">Link Akun Yang Didaftarkan</div>
+                            <div class="info-value" id="displaySocialLink">
+                                <a href="#" target="_blank" style="color: var(--primary-teal); text-decoration: none;">Belum ada tautan</a>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="profile-actions">
@@ -247,6 +253,13 @@
                     avatarImg.src = fullUserData.avatar;
                 } else {
                     avatarImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullUserData.username)}&background=1aa39a&color=fff&size=200`;
+                }
+
+                // Show account social link
+                const socialLinkContainer = document.querySelector('#displaySocialLink a');
+                if(fullUserData.socialLink && fullUserData.socialLink.trim() !== '') {
+                    socialLinkContainer.href = fullUserData.socialLink;
+                    socialLinkContainer.innerText = fullUserData.socialLink;
                 }
             } else {
                 document.getElementById('displayUsername').innerText = activeUser.username;

@@ -205,7 +205,7 @@
                 <a href="index.html">Home</a>
                 <a href="home.html">Journey</a>
                 <a href="Message.html">Message</a>
-                <a href="lihatriwayat.html">History by ALFGGR</a>
+                <a href="lihatriwayat.html">History</a>
             </nav>
             <div class="header-right">
                 <!-- Akan diganti oleh Auth Script -->
@@ -280,19 +280,15 @@
 
     <!-- LOGIC SYSTEM & DB UNTUK POSTING -->
     <script>
-        // 1. Proteksi Halaman (Auth Guard)
-        if(!localStorage.getItem('activeUser')) {
-            window.location.replace("login.html");
-        }
-
-        let activeUserObj = null;
+        // Sesi Aktif Check (Opsional untuk halaman publik)
+        const activeUserStr = localStorage.getItem('activeUser');
+        let activeUserObj = activeUserStr ? JSON.parse(activeUserStr) : null;
 
         document.addEventListener("DOMContentLoaded", function() {
             const activeUserStr = localStorage.getItem('activeUser');
             if(activeUserStr) {
                 activeUserObj = JSON.parse(activeUserStr);
                 
-                // Set Header Kanan
                 const headerRight = document.querySelector('.header-right');
                 if(headerRight) {
                     headerRight.innerHTML = `
@@ -309,14 +305,66 @@
                 // Set Info Penulis di Form Create Post
                 document.getElementById('activeUserName').innerText = activeUserObj.username;
                 document.getElementById('activeUserAvatar').src = activeUserObj.avatar ? activeUserObj.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeUserObj.username)}&background=1aa39a&color=fff&size=128`;
+            } else {
+                // GUEST MODE
+                const headerRight = document.querySelector('.header-right');
+                if(headerRight) {
+                    headerRight.innerHTML = `
+                        <a href="login.html" class="btn btn-outline" style="text-decoration: none;">Log in</a>
+                        <a href="signup.html" class="btn btn-primary" style="text-decoration: none;">Sign up</a>
+                    `;
+                }
                 
-                // Render pengguna terdaftar
-                renderRegisteredUsers();
-
-                // Render postingan dari Local Storage
-                renderPosts();
+                // Hide Create Post card for guests
+                const createCard = document.querySelector('.create-post-card');
+                if(createCard) createCard.style.display = 'none';
+                
+                // Hide Create Post button in header-left for guest
+                const createBtn = document.querySelector('.icon-btn.teal-bg');
+                if(createBtn) createBtn.style.display = 'none';
             }
+
+            // Seed initial data if empty
+            seedDatabase();
+
+            // Render pengguna terdaftar (Visible to all)
+            renderRegisteredUsers();
+
+            // Render postingan dari Local Storage (Visible to all)
+            renderPosts();
         });
+
+        function seedDatabase() {
+            if (!localStorage.getItem('postsDB')) {
+                const initialPosts = [
+                    {
+                        id: 1,
+                        authorName: "Jingliu Official",
+                        content: "Selamat datang Trailblazer! Gunakan halaman ini untuk berbagi momen gacha dan artwork favoritmu. #Jingliu #Castorice",
+                        time: "1 jam yang lalu",
+                        likedBy: ["Admin"],
+                        comments: [{author: "Trailblazer", text: "Siap, terima kasih admin!"}]
+                    },
+                    {
+                        id: 2,
+                        authorName: "Castorice Admin",
+                        content: "Keajaiban Kuantum sedang menunggumu. Sudahkah kalian melakukan Warp hari ini? #GachaLife",
+                        time: "3 jam yang lalu",
+                        image: "hero_banner.png",
+                        likedBy: [],
+                        comments: []
+                    }
+                ];
+                localStorage.setItem('postsDB', JSON.stringify(initialPosts));
+            }
+            if (!localStorage.getItem('usersDB')) {
+                const initialUsers = [
+                    { username: "Jingliu Official", email: "admin@castorice-jingliu.com", avatar: "chibi_jingliu.png" },
+                    { username: "Castorice Admin", email: "mod@castorice-jingliu.com", avatar: "chibi_castorice.png" }
+                ];
+                localStorage.setItem('usersDB', JSON.stringify(initialUsers));
+            }
+        }
 
         function logout() {
             localStorage.removeItem('activeUser');
@@ -454,7 +502,7 @@
                 const avatar = authorUser && authorUser.avatar ? authorUser.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(post.authorName)}&background=38495a&color=fff`;
                 
                 // Cek Likes
-                const isLiked = post.likedBy && post.likedBy.includes(activeUserObj.username);
+                const isLiked = activeUserObj && post.likedBy && post.likedBy.includes(activeUserObj.username);
                 const heartClass = isLiked ? 'ph-fill ph-heart' : 'ph ph-heart';
                 const heartStyle = isLiked ? 'color: var(--accent-pink);' : '';
                 const likeCount = post.likedBy ? post.likedBy.length : 0;
@@ -483,7 +531,7 @@
                                     <div id="menu-${post.id}-${cIndex}" style="display:none; position: absolute; right: 0; top: 100%; background: var(--white); border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 10; overflow: hidden; min-width: 140px;">
                                         ${c.author === activeUserObj.username ? `<button onclick="deleteComment(${post.id}, ${cIndex})" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:#ea4335; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#f8fafb'" onmouseout="this.style.background='none'"><i class="ph-bold ph-trash"></i> Hapus</button>` : ''}
                                         <button onclick="copyComment('${post.id}-${cIndex}')" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-dark); border-bottom:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#f8fafb'" onmouseout="this.style.background='none'"><i class="ph-bold ph-copy"></i> Salin</button>
-                                        <button onclick="shareComment()" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-dark); display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#f8fafb'" onmouseout="this.style.background='none'"><i class="ph-bold ph-share-network"></i> Bagikan</button>
+                                        <button onclick="shareLink('${c.author}')" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-dark); display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#f8fafb'" onmouseout="this.style.background='none'"><i class="ph-bold ph-share-network"></i> Bagikan</button>
                                     </div>
                                 </div>
                             </div>
@@ -491,15 +539,23 @@
                     });
                 }
                 
-                // Form input komentar berdesain elegan di setiap postingan
-                const myAvatar = activeUserObj.avatar ? activeUserObj.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeUserObj.username)}&background=38495a&color=fff`;
-                commentsHtml += `
-                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
-                        <img src="${myAvatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
-                        <input type="text" id="commentInput_${post.id}" placeholder="Tulis balasanmu..." style="flex: 1; padding: 10px 16px; border: 1px solid rgba(0,0,0,0.1); border-radius: 30px; font-size: 13px; font-family: inherit; background: #f8fafb; outline: none; transition: all 0.2s;" onfocus="this.style.borderColor='var(--primary-teal)'; this.style.backgroundColor='var(--white)'" onblur="this.style.borderColor='rgba(0,0,0,0.1)'; this.style.backgroundColor='#f8fafb'" onkeypress="handleCommentEnter(event, ${post.id})">
-                        <button onclick="submitInlineComment(${post.id})" style="background: var(--primary-teal); color: var(--white); border: none; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Kirim Balasan"><i class="ph-bold ph-paper-plane-right"></i></button>
-                    </div>
-                </div>`;
+                // Form input komentar atau Link Login
+                if(activeUserObj) {
+                    const myAvatar = activeUserObj.avatar ? activeUserObj.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeUserObj.username)}&background=38495a&color=fff`;
+                    commentsHtml += `
+                        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+                            <img src="${myAvatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                            <input type="text" id="commentInput_${post.id}" placeholder="Tulis balasanmu..." style="flex: 1; padding: 10px 16px; border: 1px solid rgba(0,0,0,0.1); border-radius: 30px; font-size: 13px; font-family: inherit; background: #f8fafb; outline: none; transition: all 0.2s;" onfocus="this.style.borderColor='var(--primary-teal)'; this.style.backgroundColor='var(--white)'" onblur="this.style.borderColor='rgba(0,0,0,0.1)'; this.style.backgroundColor='#f8fafb'" onkeypress="handleCommentEnter(event, ${post.id})">
+                            <button onclick="submitInlineComment(${post.id})" style="background: var(--primary-teal); color: var(--white); border: none; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Kirim Balasan"><i class="ph-bold ph-paper-plane-right"></i></button>
+                        </div>
+                    </div>`;
+                } else {
+                    commentsHtml += `
+                        <div style="margin-top: 8px; text-align: center; padding: 12px; background: #f8fafb; border-radius: 30px; border: 1px dashed rgba(0,0,0,0.1);">
+                            <a href="login.html" style="font-size: 12px; color: var(--primary-teal); text-decoration: none; font-weight: 700;">Masuk untuk memberikan komentar & suka</a>
+                        </div>
+                    </div>`;
+                }
 
                 // Rakit element jika ada foto/link
                 let mediaHtml = '';
@@ -531,11 +587,11 @@
                                     </button>
                                     
                                     <div id="post-menu-${post.id}" style="display:none; position: absolute; right: 0; top: 100%; background: var(--white); border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 10; overflow: hidden; min-width: 140px;">
-                                        ${post.authorName === activeUserObj.username ? `
+                                        ${activeUserObj && post.authorName === activeUserObj.username ? `
                                             <button onclick="editPost(${post.id})" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-dark); border-bottom:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#f8fafb'" onmouseout="this.style.background='none'"><i class="ph-bold ph-pencil-simple"></i> Edit</button>
                                             <button onclick="deletePost(${post.id})" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:#ea4335; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#f8fafb'" onmouseout="this.style.background='none'"><i class="ph-bold ph-trash"></i> Hapus</button>
                                         ` : ''}
-                                        <button onclick="shareComment()" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-dark); display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#f8fafb'" onmouseout="this.style.background='none'"><i class="ph-bold ph-share-network"></i> Bagikan</button>
+                                        <button onclick="shareLink('${post.authorName}')" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-dark); display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#f8fafb'" onmouseout="this.style.background='none'"><i class="ph-bold ph-share-network"></i> Bagikan</button>
                                     </div>
                                 </div>
                             </div>
@@ -545,8 +601,8 @@
                             ${mediaHtml}
                         </div>
                         <div class="post-engagement">
-                            <button class="engage-btn" onclick="toggleLike(${post.id})" style="${heartStyle}"><i class="${heartClass}"></i> <span class="like-count">${likeCount}</span></button>
-                            <button class="engage-btn" onclick="document.getElementById('commentInput_${post.id}').focus()"><i class="ph ph-chat-circle"></i> ${commentCount}</button>
+                            <button class="engage-btn" onclick="${activeUserObj ? `toggleLike(${post.id})` : `window.location.href='login.html'`}" style="${heartStyle}"><i class="${heartClass}"></i> <span class="like-count">${likeCount}</span></button>
+                            <button class="engage-btn" onclick="${activeUserObj ? `document.getElementById('commentInput_${post.id}').focus()` : `window.location.href='login.html'`}"><i class="ph ph-chat-circle"></i> ${commentCount}</button>
                         </div>
                         ${commentsHtml}
                     </div>
@@ -570,7 +626,7 @@
                                         <i class="ph-bold ph-dots-three" style="font-size: 24px;"></i>
                                     </button>
                                     <div id="post-menu-jingliu" style="display:none; position: absolute; right: 0; top: 100%; background: var(--white); border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 10; overflow: hidden; min-width: 140px;">
-                                        <button onclick="shareComment()" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-dark); display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#f8fafb'" onmouseout="this.style.background='none'"><i class="ph-bold ph-share-network"></i> Bagikan</button>
+                                        <button onclick="shareLink('Jingliu Official')" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-dark); display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#f8fafb'" onmouseout="this.style.background='none'"><i class="ph-bold ph-share-network"></i> Bagikan</button>
                                     </div>
                                 </div>
                             </div>
@@ -752,10 +808,28 @@
             document.querySelectorAll('[id^="menu-"]').forEach(m => m.style.display = 'none');
         }
 
-        // Fitur Sebar Share
-        function shareComment() {
-            alert("Tautan menuju komentar ini siap disebarkan via WhatsApp atau Media Sosial!");
+        // Fitur Sebar Share (Berdasarkan Akun yang Didaftarkan)
+        function shareLink(authorName) {
+            const usersDB = JSON.parse(localStorage.getItem('usersDB')) || [];
+            const user = usersDB.find(u => u.username === authorName);
+            
+            let linkToShare = window.location.origin + "/profile.html?user=" + encodeURIComponent(authorName);
+            
+            if (user && user.socialLink && user.socialLink.trim() !== '') {
+                linkToShare = user.socialLink;
+                navigator.clipboard.writeText(linkToShare).then(() => {
+                    alert('Tautan (' + linkToShare + ') dari akun ' + authorName + ' yang terdaftar berhasil disalin! Siap disebarkan ke media sosial.');
+                }).catch(err => {
+                    alert('Gagal menyalin tautan: ' + linkToShare);
+                });
+            } else {
+                navigator.clipboard.writeText(linkToShare).then(() => {
+                    alert('Tautan profil ' + authorName + ' berhasil disalin! Siap disebarkan ke media sosial.');
+                });
+            }
+            
             document.querySelectorAll('[id^="menu-"]').forEach(m => m.style.display = 'none');
+            document.querySelectorAll('[id^="post-menu-"]').forEach(m => m.style.display = 'none');
         }
     </script>
 </body>
