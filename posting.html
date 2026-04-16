@@ -74,7 +74,6 @@
             border-radius: var(--border-radius-md);
             font-family: inherit;
             resize: none;
-            /* Cegah resize manual */
             min-height: 100px;
             font-size: 15px;
             color: var(--text-dark);
@@ -232,7 +231,7 @@
             <div class="header-left">
                 <button class="icon-btn dark-bg" onclick="window.location.href='profile.html'" title="My Profile"><i
                         class="ph ph-user"></i></button>
-                <button class="icon-btn teal-bg" onclick="window.location.href='posting.html'" title="New Post"><i
+                <button class="icon-btn teal-bg" id="createPostNavBtn" onclick="window.location.href='posting.html'" title="New Post"><i
                         class="ph ph-plus"></i></button>
             </div>
             <nav class="header-center">
@@ -247,10 +246,8 @@
         </header>
 
         <main class="feed-container">
-
-
             <!-- Form Buat Post Baru -->
-            <div class="create-post-card">
+            <div class="create-post-card" id="createPostCard">
                 <div class="post-header-author">
                     <img src="" alt="Profile" class="author-avatar" id="activeUserAvatar">
                     <div class="author-info">
@@ -270,7 +267,7 @@
                     <div id="previewLink"
                         style="font-size:13px; color:var(--primary-teal); font-weight: 600; word-break:break-all; flex: 1; display:none; padding-top: 8px;">
                     </div>
-                    <button onclick="clearAttachments()"
+                    <button onclick="window.clearAttachments()"
                         style="background:none; border:none; color:#ea4335; font-size:20px; cursor:pointer;"
                         title="Hapus Lampiran"><i class="ph-fill ph-x-circle"></i></button>
                 </div>
@@ -280,53 +277,25 @@
                         <input type="file" id="imageUploader" accept="image/*" style="display:none;">
                         <button title="Unggah Gambar" onclick="document.getElementById('imageUploader').click()"><i
                                 class="ph ph-image"></i></button>
-                        <button title="Bagikan Tautan" onclick="attachLink()"><i class="ph ph-link"></i></button>
-                        <button title="Sematkan Emotikon" onclick="alert('Fitur emotikon akan segera hadir!')"><i
-                                class="ph ph-smiley"></i></button>
+                        <button title="Bagikan Tautan" onclick="window.attachLink()"><i class="ph ph-link"></i></button>
                     </div>
-                    <button class="btn btn-primary btn-post" onclick="submitPost()">Kirim Posting</button>
+                    <button class="btn btn-primary btn-post" id="submitPostBtn" onclick="window.submitPost()">Kirim Posting</button>
                 </div>
             </div>
 
             <div class="timeline-divider">Gacha Timeline</div>
 
             <!-- Tempat Render Feed Post -->
-            <div class="post-feed" id="postFeed">
-                <!-- Posting Statis Default sebagai contoh -->
-                <div class="post-card">
-                    <div class="post-header-author" style="margin-bottom: 0;">
-                        <img src="chibi_jingliu.png" alt="Jingliu" class="author-avatar" style="border-color: #fafdfd">
-                        <div class="author-info">
-                            <h3>Jingliu Official</h3>
-                            <p style="color: var(--text-muted); font-size: 12px;">Admin</p>
-                        </div>
-                        <div class="post-meta-time">2 Jam yang lalu</div>
-                    </div>
-                    <div class="post-content-text">
-                        Selamat datang semuanya! Jangan ragu untuk membagikan pencapaian gacha maupun fan-art Castorice
-                        & Jingliu kalian di halaman komunitas ini.
-                    </div>
-                    <div class="post-engagement">
-                        <button class="engage-btn"><i class="ph ph-heart"></i> 99+</button>
-                        <button class="engage-btn"><i class="ph ph-chat-circle"></i> 12</button>
-                    </div>
-                </div>
-            </div>
-
+            <div class="post-feed" id="postFeed"></div>
         </main>
     </div>
 
-    <!-- LOGIC SYSTEM & DB UNTUK POSTING -->
-    <!-- Firebase SDK v10 (compat mode) -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
     <script>
-        // ==========================================
-        // ===  KONTROL DATABASE & SISTEM SOSIAL  ===
-        // ==========================================
-        
-        // Konfigurasi Firebase (Ganti jika sudah punya akun Firebase)
+        // === CONFIGURATION & DB INITIALIZATION ===
         const firebaseConfig = {
             apiKey: "GANTI_API_KEY",
             authDomain: "GANTI.firebaseapp.com",
@@ -337,20 +306,17 @@
             appId: "GANTI"
         };
 
-        // Deteksi Mode (Cloud atau Lokal)
         window.isFirebaseSetup = firebaseConfig.apiKey !== "GANTI_API_KEY";
-        window.currentPostsList = [];
-
         if (window.isFirebaseSetup) {
             try {
                 firebase.initializeApp(firebaseConfig);
                 window.fbDB = firebase.database();
                 window.postsRef = window.fbDB.ref('posts');
-            } catch (e) { console.error("Firebase Gagal:", e); }
+            } catch (e) { console.error("Firebase Init Error:", e); }
         }
 
-        // --- SISTEM NOTIFIKASI ---
-        function showToast(message, isError = false) {
+        // --- GLOBAL UTILITIES ---
+        window.showToast = function(message, isError = false) {
             const toast = document.createElement('div');
             const icon = isError ? '<i class="ph-fill ph-warning-circle" style="color:#ea4335; font-size:24px;"></i>' : '<i class="ph-fill ph-check-circle" style="color:#20b2aa; font-size:24px;"></i>';
             toast.innerHTML = `<div style="display:flex;align-items:center;gap:12px;">${icon}<span style="font-size:14px;font-weight:600;color:#1e293b;">${message}</span></div>`;
@@ -358,19 +324,15 @@
             document.body.appendChild(toast);
             requestAnimationFrame(() => { toast.style.transform = 'translateX(-50%) translateY(0)'; toast.style.opacity = '1'; });
             setTimeout(() => { toast.style.transform = 'translateX(-50%) translateY(100px)'; toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 3000);
-        }
+        };
 
-        // --- KONTROL MENU TITIK 3 ---
-        function toggleMenu(menuId) {
+        window.toggleMenu = function(menuId) {
             const el = document.getElementById(menuId);
             if (!el) return;
             const isVisible = el.style.display === 'block';
             document.querySelectorAll('[id^="post-menu-"]').forEach(m => m.style.display = 'none');
-            if (!isVisible) {
-                el.style.display = 'block';
-                el.style.zIndex = '1000';
-            }
-        }
+            if (!isVisible) el.style.display = 'block';
+        };
 
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.post-menu-wrapper')) {
@@ -378,187 +340,10 @@
             }
         });
 
-        // --- FITUR LIKE (HYBRID) ---
-        function toggleLike(firebaseKey) {
-            const activeUser = JSON.parse(localStorage.getItem('activeUser'));
-            if (!activeUser) { showToast('Silakan login dulu!', true); return; }
-
-            if (window.isFirebaseSetup && window.postsRef) {
-                const likeRef = window.postsRef.child(firebaseKey).child('likedBy').child(activeUser.username);
-                likeRef.once('value').then(snap => { if (snap.val()) likeRef.remove(); else likeRef.set(true); });
-            } else {
-                let localDB = JSON.parse(localStorage.getItem('postsDB')) || [];
-                const idx = localDB.findIndex(p => p.firebaseKey === firebaseKey);
-                if (idx > -1) {
-                    if (!localDB[idx].likedBy) localDB[idx].likedBy = {};
-                    if (localDB[idx].likedBy[activeUser.username]) delete localDB[idx].likedBy[activeUser.username];
-                    else localDB[idx].likedBy[activeUser.username] = true;
-                    localStorage.setItem('postsDB', JSON.stringify(localDB));
-                    window.renderPosts(localDB);
-                }
-            }
-        }
-
-        // --- FITUR KOMENTAR (HYBRID) ---
-        function submitInlineComment(firebaseKey) {
-            const activeUser = JSON.parse(localStorage.getItem('activeUser'));
-            if (!activeUser) { showToast('Silakan login dulu!', true); return; }
-            const inputEl = document.getElementById('commentInput_' + firebaseKey);
-            const text = inputEl.value.trim();
-            if (!text) return;
-
-            const cleanText = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            if (window.isFirebaseSetup && window.postsRef) {
-                window.postsRef.child(firebaseKey).child('comments').push({ author: activeUser.username, text: cleanText }).then(() => { inputEl.value = ''; });
-            } else {
-                let localDB = JSON.parse(localStorage.getItem('postsDB')) || [];
-                const idx = localDB.findIndex(p => p.firebaseKey === firebaseKey);
-                if (idx > -1) {
-                    if (!localDB[idx].comments) localDB[idx].comments = {};
-                    localDB[idx].comments['c-' + Date.now()] = { author: activeUser.username, text: cleanText };
-                    localStorage.setItem('postsDB', JSON.stringify(localDB));
-                    inputEl.value = '';
-                    window.renderPosts(localDB);
-                }
-            }
-        }
-
-        // --- FITUR HAPUS & EDIT (HYBRID) ---
-        function deletePost(key) {
-            if (!confirm('Hapus postingan?')) return;
-            if (window.isFirebaseSetup && window.postsRef) {
-                window.postsRef.child(key).remove().then(() => showToast('Terhapus dari Cloud'));
-            } else {
-                let localDB = JSON.parse(localStorage.getItem('postsDB')) || [];
-                localDB = localDB.filter(p => p.firebaseKey !== key);
-                localStorage.setItem('postsDB', JSON.stringify(localDB));
-                window.renderPosts(localDB);
-                showToast('Terhapus secara lokal');
-            }
-        }
-
-        function editPost(key) {
-            const list = window.currentPostsList || JSON.parse(localStorage.getItem('postsDB')) || [];
-            const post = list.find(p => p.firebaseKey === key);
-            if (!post) return;
-            const content = prompt("Edit postingan Anda:", post.content.replace(/&lt;/g,'<').replace(/&gt;/g,'>'));
-            if (content !== null && content.trim() !== "") {
-                const clean = content.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-                if (window.isFirebaseSetup && window.postsRef) {
-                    window.postsRef.child(key).update({ content: clean }).then(() => showToast('Diperbarui!'));
-                } else {
-                    let localDB = JSON.parse(localStorage.getItem('postsDB')) || [];
-                    const idx = localDB.findIndex(p => p.firebaseKey === key);
-                    if (idx > -1) {
-                        localDB[idx].content = clean;
-                        localStorage.setItem('postsDB', JSON.stringify(localDB));
-                        window.renderPosts(localDB);
-                        showToast('Berhasil Edit (Lokal)');
-                    }
-                }
-            }
-        }
-
-        function shareLink(name) {
-            const url = window.location.origin + window.location.pathname + "?komunitas_castorice_dari=" + encodeURIComponent(name);
-            const el = document.createElement('textarea');
-            el.value = url;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            showToast('Tautan berhasil disalin!');
-        }
-
-        // Sesi Aktif Check
-        const activeUserStr = localStorage.getItem('activeUser');
-        let activeUserObj = activeUserStr ? JSON.parse(activeUserStr) : null;
-
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const activeUserStr = localStorage.getItem('activeUser');
-            if (activeUserStr) {
-                activeUserObj = JSON.parse(activeUserStr);
-
-                const headerRight = document.querySelector('.header-right');
-                if (headerRight) {
-                    headerRight.innerHTML = `
-                        <div style="display:flex; align-items:center; gap:16px;">
-                            <a href="profile.html" style="font-weight:800; font-size:15px; color:var(--text-dark); text-decoration:none; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-teal)'" onmouseout="this.style.color='var(--text-dark)'">
-                                <i class="ph-fill ph-user-circle" style="color:var(--primary-teal); font-size:22px; vertical-align:-5px; margin-right:4px;"></i> 
-                                ${activeUserObj.username}
-                            </a>
-                            <button onclick="logout()" class="btn btn-outline" style="padding: 10px 24px; font-size: 14px; border-color: rgba(0,0,0,0.1);">Log out</button>
-                        </div>
-                    `;
-                }
-
-                // Set Info Penulis di Form Create Post
-                document.getElementById('activeUserName').innerText = activeUserObj.username;
-                document.getElementById('activeUserAvatar').src = activeUserObj.avatar ? activeUserObj.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeUserObj.username)}&background=1aa39a&color=fff&size=128`;
-            } else {
-                // GUEST MODE
-                const headerRight = document.querySelector('.header-right');
-                if (headerRight) {
-                    headerRight.innerHTML = `
-                        <a href="login.html" class="btn btn-outline" style="text-decoration: none;">Log in</a>
-                        <a href="signup.html" class="btn btn-primary" style="text-decoration: none;">Sign up</a>
-                    `;
-                }
-
-                // Hide Create Post card for guests
-                const createCard = document.querySelector('.create-post-card');
-                if (createCard) createCard.style.display = 'none';
-
-                // Hide Create Post button in header-left for guest
-                const createBtn = document.querySelector('.icon-btn.teal-bg');
-                if (createBtn) createBtn.style.display = 'none';
-            }
-
-            // Cek URL Query untuk filter profil akun spesifik
-            const urlParams = new URLSearchParams(window.location.search);
-            const authorQuery = urlParams.get('komunitas_castorice_dari');
-
-            if (isFirebaseSetup) {
-                // Tampilkan loading skeleton hanya jika pakai Firebase
-                document.getElementById('postFeed').innerHTML = `<div style="text-align:center;padding:60px;color:var(--text-muted);"><i class="ph-bold ph-spinner" style="font-size:32px;animation:spin 1s linear infinite;"></i><p style="margin-top:12px;font-weight:600;">Memuat dari Cloud Database...</p></div>`;
-
-                // Dengarkan perubahan data Firebase secara realtime
-                postsRef.orderByChild('timestamp').on('value', function(snapshot) {
-                    const postsData = snapshot.val();
-                    let postsList = [];
-                    if (postsData) {
-                        postsList = Object.entries(postsData).map(([key, val]) => ({ firebaseKey: key, ...val }));
-                        postsList.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                    }
-                    window.currentPostsList = postsList;
-                    window.renderPosts(postsList, null, authorQuery);
-                }, function(error) {
-                    document.getElementById('postFeed').innerHTML = `<div style="text-align:center;padding:60px;color:#ea4335;"><i class="ph-bold ph-warning-circle" style="font-size:32px;"></i><p style="margin-top:12px;font-weight:600;">Gagal terhubung ke Database Cloud.</p></div>`;
-                });
-            } else {
-                // FALLBACK: Gunakan LocalStorage Jika Firebase Belum di-Config
-                console.log("Firebase belum di-setup. Menggunakan database lokal (LocalStorage).");
-                const localPosts = JSON.parse(localStorage.getItem('postsDB')) || [
-                    { firebaseKey: 'local-1', authorName: "Jingliu Official", content: "Mode Database Lokal Aktif. Silakan setup Firebase di posting.html untuk mode Online. #Jingliu #Castorice", time: "Baru saja", likedBy: {}, comments: {} },
-                    { firebaseKey: 'local-2', authorName: "Castorice Admin", content: "Keajaiban Kuantum sedang menunggumu. #GachaLife", time: "3 jam yang lalu", image: "hero_banner.png", likedBy: {}, comments: {} }
-                ];
-                renderPosts(localPosts, null, authorQuery);
-            }
-        });
-
-        function logout() {
-            localStorage.removeItem('activeUser');
-            window.location.href = "login.html";
-        }
-
-
-
-        // Variabel penampung file dan tautan - Jadikan Global agar terbaca database.js
+        // --- ATTACHMENTS SYSTEM ---
         window.pendingImage = null;
         window.pendingLink = null;
 
-        // Baca Gambar ke Base64 saat diupload
         document.getElementById('imageUploader').addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -572,210 +357,251 @@
             reader.readAsDataURL(file);
         });
 
-        // Prompt input tautan
         window.attachLink = function() {
-            const url = prompt("Masukkan Tautan (URL) menarik yang ingin Anda bagikan:", "https://");
+            const url = prompt("Masukkan Tautan (URL):", "https://");
             if (url && url.length > 8) {
                 window.pendingLink = url;
                 document.getElementById('attachedPreview').style.display = 'flex';
                 document.getElementById('previewLink').style.display = 'block';
-                document.getElementById('previewLink').innerHTML = `<i class="ph-bold ph-link" style="vertical-align: -2px;"></i> ${window.pendingLink}`;
-            }
-        }
-
-        // Hapus attachment batal
-        window.clearAttachments = function() {
-            window.pendingImage = null;
-            window.pendingLink = null;
-            document.getElementById('imageUploader').value = '';
-            document.getElementById('attachedPreview').style.display = 'none';
-            document.getElementById('previewImage').style.display = 'none';
-            document.getElementById('previewLink').style.display = 'none';
-        }
-
-        // Membungkus handle comment enter ke global
-        window.handleCommentEnter = function(e, firebaseKey) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                window.submitInlineComment(firebaseKey);
+                document.getElementById('previewLink').innerHTML = `<i class="ph-bold ph-link"></i> ${window.pendingLink}`;
             }
         };
 
+        window.clearAttachments = function() {
+            window.pendingImage = null; window.pendingLink = null;
+            document.getElementById('imageUploader').value = '';
+            document.getElementById('attachedPreview').style.display = 'none';
+        };
 
+        // --- POSTING & SOCIAL CORE ---
+        window.submitPost = function() {
+            if (!window.activeUserObj) { window.showToast('Silakan login dulu!', true); return; }
+            const textArea = document.getElementById('postInputText');
+            const textContent = textArea.value.trim();
+            if (!textContent && !window.pendingImage && !window.pendingLink) { window.showToast('Tuliskan sesuatu dulu!', true); return; }
 
-        // Helper menguraikan Hashtag menjadi elemen klikabel
-        function formatHashtags(text) {
-            return text.replace(/#(\w+)/g, '<span class="hashtag" onclick="renderPosts(\'$1\')" style="color: var(--primary-teal); cursor: pointer; font-weight: 600; text-decoration: none;" onmouseover="this.style.textDecoration=\'underline\'" onmouseout="this.style.textDecoration=\'none\'">#$1</span>');
-        }
-
-        // Fungsi mencetak postingan ke layar (dipanggil dari Firebase listener)
-        window.renderPosts = function(postsList, filterTag = null, filterAuthor = null) {
-            const feedContainer = document.getElementById('postFeed');
-            const usersDB = JSON.parse(localStorage.getItem('usersDB')) || [];
-
-            let allHtml = '';
-
-            let postsToRender = postsList;
-            
-            if (filterAuthor) {
-                postsToRender = postsToRender.filter(p => p.authorName === filterAuthor);
-                allHtml += `
-                    <div style="background: #f1f9fa; padding: 16px 20px; border-radius: 12px; margin-bottom: 24px; border: 1px dashed var(--primary-teal); display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-weight: 700; color: var(--primary-teal); font-size: 14px;"><i class="ph-bold ph-user" style="vertical-align:-2px;"></i> Melirik Postingan dari Akun: ${filterAuthor}</span>
-                        <button onclick="window.location.href='posting.html'" style="background: var(--primary-teal); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700;"><i class="ph-bold ph-list"></i> Lihat Semua Timeline</button>
-                    </div>
-                `;
-                if (postsToRender.length === 0) {
-                    allHtml += `<div style="text-align:center; padding:40px; color:var(--text-muted); font-weight:600;">Belum ada postingan dari akun ini.</div>`;
-                }
-            } else if (filterTag) {
-                postsToRender = postsToRender.filter(p => p.content && p.content.includes('#' + filterTag));
-                allHtml += `
-                    <div style="background: #f1f9fa; padding: 16px 20px; border-radius: 12px; margin-bottom: 24px; border: 1px dashed var(--primary-teal); display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-weight: 700; color: var(--primary-teal); font-size: 14px;"><i class="ph-bold ph-hash" style="vertical-align:-2px;"></i> Hasil Pencarian: #${filterTag}</span>
-                        <button onclick="window.location.href='posting.html'" style="background: var(--primary-teal); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700;"><i class="ph-bold ph-x"></i> Hapus Filter</button>
-                    </div>
-                `;
-            }
-
-            postsToRender.forEach(post => {
-                const authorUser = usersDB.find(u => u.username === post.authorName);
-                const avatar = (post.authorAvatar && post.authorAvatar !== '') ? post.authorAvatar : (authorUser && authorUser.avatar ? authorUser.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(post.authorName)}&background=38495a&color=fff`);
-
-                // Firebase simpan likedBy sebagai object {username: true}
-                const likedByObj = post.likedBy || {};
-                const isLiked = activeUserObj && likedByObj[activeUserObj.username] === true;
-                const heartClass = isLiked ? 'ph-fill ph-heart' : 'ph ph-heart';
-                const heartStyle = isLiked ? 'color: var(--accent-pink);' : '';
-                const likeCount = Object.keys(likedByObj).length;
-
-                // Firebase simpan comments sebagai object {key: {author, text}}
-                const commentsObj = post.comments || {};
-                const commentsList = Object.entries(commentsObj).map(([k, v]) => ({ key: k, ...v }));
-                const commentCount = commentsList.length;
-
-                let commentsHtml = '<div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 12px;">';
-
-                commentsList.forEach((c, cIndex) => {
-                    const commenterUser = usersDB.find(u => u.username === c.author);
-                    const cAvatar = commenterUser && commenterUser.avatar ? commenterUser.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.author)}&background=1aa39a&color=fff`;
-                    commentsHtml += `
-                        <div style="background: #f8fafb; padding: 12px; border-radius: 8px; display: flex; gap: 12px; align-items:flex-start;">
-                            <img src="${cAvatar}" style="width: 24px; height: 24px; border-radius: 50%;">
-                            <div style="flex: 1;">
-                                <div style="font-weight: 700; font-size: 13px; color: var(--text-dark); margin-bottom: 2px;">${c.author}</div>
-                                <div style="font-size: 13px; color: var(--text-dark); line-height: 1.4;" id="comment-text-${post.firebaseKey}-${cIndex}">${c.text}</div>
-                            </div>
-                            <div class="comment-menu" style="position: relative;">
-                                <button onclick="toggleMenu('menu-${post.firebaseKey}-${cIndex}')" style="background:none; border:none; color:var(--text-muted); cursor:pointer; padding: 4px;">
-                                    <i class="ph-bold ph-dots-three" style="font-size: 20px;"></i>
-                                </button>
-                                <div id="menu-${post.firebaseKey}-${cIndex}" style="display:none; position: absolute; right: 0; top: 100%; background: var(--white); border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 10; overflow: hidden; min-width: 140px;">
-                                    ${activeUserObj && c.author === activeUserObj.username ? `<button onclick="deleteComment('${post.firebaseKey}','${c.key}')" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:#ea4335; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; gap:8px;"><i class="ph-bold ph-trash"></i> Hapus</button>` : ''}
-                                    <button onclick="copyComment('${post.firebaseKey}-${cIndex}')" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-dark); border-bottom:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; gap:8px;"><i class="ph-bold ph-copy"></i> Salin</button>
-                                    <button onclick="shareLink('${c.author}')" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-dark); display:flex; align-items:center; gap:8px;"><i class="ph-bold ph-share-network"></i> Bagikan</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+            const cleanContent = textContent.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            if (window.isFirebaseSetup && window.postsRef) {
+                const btn = document.getElementById('submitPostBtn');
+                btn.disabled = true; btn.innerText = 'Memposting...';
+                window.postsRef.push({
+                    authorName: window.activeUserObj.username,
+                    authorAvatar: window.activeUserObj.avatar || '',
+                    content: cleanContent,
+                    image: window.pendingImage,
+                    link: window.pendingLink,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    likedBy: {}, comments: {}
+                }).then(() => {
+                    textArea.value = ''; window.clearAttachments();
+                    btn.disabled = false; btn.innerText = 'Kirim Posting';
+                    window.showToast('Berhasil diposting!');
                 });
+            } else {
+                let localDB = JSON.parse(localStorage.getItem('postsDB')) || [];
+                localDB.unshift({
+                    firebaseKey: 'local-' + Date.now(),
+                    authorName: window.activeUserObj.username,
+                    content: cleanContent, image: window.pendingImage, link: window.pendingLink,
+                    timestamp: Date.now(), likedBy: {}, comments: {}
+                });
+                localStorage.setItem('postsDB', JSON.stringify(localDB));
+                textArea.value = ''; window.clearAttachments();
+                window.renderPosts(localDB);
+                window.showToast('Diposting secara Lokal');
+            }
+        };
 
-                if (activeUserObj) {
-                    const myAvatar = activeUserObj.avatar ? activeUserObj.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeUserObj.username)}&background=38495a&color=fff`;
-                    commentsHtml += `
-                        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
-                            <img src="${myAvatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
-                            <input type="text" id="commentInput_${post.firebaseKey}" placeholder="Tulis balasanmu..." style="flex: 1; padding: 10px 16px; border: 1px solid rgba(0,0,0,0.1); border-radius: 30px; font-size: 13px; font-family: inherit; background: #f8fafb; outline: none; transition: all 0.2s;" onfocus="this.style.borderColor='var(--primary-teal)'; this.style.backgroundColor='var(--white)'" onblur="this.style.borderColor='rgba(0,0,0,0.1)'; this.style.backgroundColor='#f8fafb'" onkeypress="handleCommentEnter(event, '${post.firebaseKey}')">
-                            <button onclick="submitInlineComment('${post.firebaseKey}')" style="background: var(--primary-teal); color: var(--white); border: none; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Kirim Balasan"><i class="ph-bold ph-paper-plane-right"></i></button>
-                        </div>
-                    </div>`;
-                } else {
-                    commentsHtml += `
-                        <div style="margin-top: 8px; text-align: center; padding: 12px; background: #f8fafb; border-radius: 30px; border: 1px dashed rgba(0,0,0,0.1);">
-                            <a href="login.html" style="font-size: 12px; color: var(--primary-teal); text-decoration: none; font-weight: 700;">Masuk untuk memberikan komentar & suka</a>
-                        </div>
-                    </div>`;
+        window.toggleLike = function(key) {
+            if (!window.activeUserObj) { window.showToast('Silakan login dulu!', true); return; }
+            if (window.isFirebaseSetup && window.postsRef) {
+                const ref = window.postsRef.child(key).child('likedBy').child(window.activeUserObj.username);
+                ref.once('value').then(snap => snap.val() ? ref.remove() : ref.set(true));
+            } else {
+                let db = JSON.parse(localStorage.getItem('postsDB')) || [];
+                const idx = db.findIndex(p => p.firebaseKey === key);
+                if (idx > -1) {
+                    if (!db[idx].likedBy) db[idx].likedBy = {};
+                    const uname = window.activeUserObj.username;
+                    db[idx].likedBy[uname] ? delete db[idx].likedBy[uname] : db[idx].likedBy[uname] = true;
+                    localStorage.setItem('postsDB', JSON.stringify(db));
+                    window.renderPosts(db);
                 }
+            }
+        };
 
-                let mediaHtml = '';
-                if (post.image) mediaHtml += `<img src="${post.image}" style="width:100%; max-height:460px; object-fit:cover; border-radius:12px; margin-top:16px;">`;
-                if (post.link) mediaHtml += `<a href="${post.link}" target="_blank" style="display:flex; align-items:center; gap:8px; color:var(--primary-teal); font-weight:700; text-decoration:none; background:#f1f9fa; padding:12px 16px; border-radius:8px; margin-top:12px; border: 1px solid rgba(106,208,201,0.2);"><i class="ph-bold ph-arrow-square-out" style="font-size: 20px;"></i> Buka Tautan Eksternal</a>`;
+        window.submitInlineComment = function(key) {
+            if (!window.activeUserObj) { window.showToast('Silakan login dulu!', true); return; }
+            const input = document.getElementById('commentInput_' + key);
+            const text = input.value.trim();
+            if (!text) return;
+            const clean = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            if (window.isFirebaseSetup && window.postsRef) {
+                window.postsRef.child(key).child('comments').push({ author: window.activeUserObj.username, text: clean }).then(() => input.value = '');
+            } else {
+                let db = JSON.parse(localStorage.getItem('postsDB')) || [];
+                const idx = db.findIndex(p => p.firebaseKey === key);
+                if (idx > -1) {
+                    if (!db[idx].comments) db[idx].comments = {};
+                    db[idx].comments['c-' + Date.now()] = { author: window.activeUserObj.username, text: clean };
+                    localStorage.setItem('postsDB', JSON.stringify(db));
+                    input.value = ''; window.renderPosts(db);
+                }
+            }
+        };
 
-                const timeLabel = post.timestamp ? new Date(post.timestamp).toLocaleString('id-ID', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'Baru saja';
+        window.deletePost = function(key) {
+            if (!confirm('Hapus postingan ini?')) return;
+            if (window.isFirebaseSetup && window.postsRef) {
+                window.postsRef.child(key).remove().then(() => window.showToast('Terhapus dari Cloud'));
+            } else {
+                let db = (JSON.parse(localStorage.getItem('postsDB')) || []).filter(p => p.firebaseKey !== key);
+                localStorage.setItem('postsDB', JSON.stringify(db));
+                window.renderPosts(db);
+                window.showToast('Terhapus Lokal');
+            }
+        };
 
-                allHtml += `
-                    <div class="post-card">
-                        <div class="post-header-author" style="margin-bottom: 0;">
-                            <img src="${avatar}" alt="${post.authorName}" class="author-avatar" style="border-color: #f1f9fa; object-fit: cover;">
-                            <div class="author-info">
-                                <h3>${post.authorName}</h3>
-                                <p style="color: var(--text-muted); font-size: 12px;">Trailblazer</p>
-                            </div>
-                            <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
-                                <div class="post-meta-time" style="margin-left: 0;">${timeLabel}</div>
-                                <div class="post-menu-wrapper" style="position: relative;">
-                                    <button onclick="toggleMenu('post-menu-${post.firebaseKey}')" style="background:none; border:none; color:var(--text-muted); cursor:pointer; padding: 4px; transition: color 0.2s; display: flex;" onmouseover="this.style.color='var(--primary-teal)'" onmouseout="this.style.color='var(--text-muted)'">
-                                        <i class="ph-bold ph-dots-three" style="font-size: 24px;"></i>
-                                    </button>
-                                    
-                                    <div id="post-menu-${post.firebaseKey}" style="display:none; position: absolute; right: 0; top: 100%; background: var(--white); border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 10; overflow: hidden; min-width: 140px;">
-                                        ${activeUserObj && post.authorName === activeUserObj.username ? `
-                                            <button onclick="editPost('${post.firebaseKey}')" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-dark); border-bottom:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; gap:8px;"><i class="ph-bold ph-pencil-simple"></i> Edit</button>
-                                            <button onclick="deletePost('${post.firebaseKey}')" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:#ea4335; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; gap:8px;"><i class="ph-bold ph-trash"></i> Hapus</button>
-                                        ` : ''}
-                                        <button onclick="shareLink('${post.authorName}')" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-dark); display:flex; align-items:center; gap:8px;"><i class="ph-bold ph-share-network"></i> Bagikan</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="post-content-text">
-                            ${formatHashtags(post.content)}
-                            ${mediaHtml}
-                        </div>
-                        <div class="post-engagement">
-                            <button class="engage-btn" onclick="${activeUserObj ? `toggleLike('${post.firebaseKey}')` : `window.location.href='login.html'`}" style="${heartStyle}"><i class="${heartClass}"></i> <span class="like-count">${likeCount}</span></button>
-                            <button class="engage-btn" onclick="${activeUserObj ? `document.getElementById('commentInput_${post.firebaseKey}').focus()` : `window.location.href='login.html'`}"><i class="ph ph-chat-circle"></i> ${commentCount}</button>
-                        </div>
-                        ${commentsHtml}
-                    </div>
-                `;
-            });
+        window.editPost = function(key) {
+            const list = window.currentPostsList || JSON.parse(localStorage.getItem('postsDB')) || [];
+            const post = list.find(p => p.firebaseKey === key);
+            if (!post) return;
+            const content = prompt("Edit postingan:", post.content.replace(/&lt;/g,'<').replace(/&gt;/g,'>'));
+            if (content && content.trim()) {
+                const clean = content.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                if (window.isFirebaseSetup && window.postsRef) {
+                    window.postsRef.child(key).update({ content: clean }).then(() => window.showToast('Diperbarui!'));
+                } else {
+                    let db = JSON.parse(localStorage.getItem('postsDB')) || [];
+                    const idx = db.findIndex(p => p.firebaseKey === key);
+                    if (idx > -1) { db[idx].content = clean; localStorage.setItem('postsDB', JSON.stringify(db)); window.renderPosts(db); }
+                }
+            }
+        };
 
-            // Post default selalu di ujung paling bawah, hanya render jika tidak difilter
-            if (!filterTag && !filterAuthor) {
-                allHtml += `
-                    <div class="post-card border-glow">
-                        <div class="post-header-author" style="margin-bottom: 0;">
-                            <img src="chibi_jingliu.png" alt="Jingliu" class="author-avatar" style="border-color: var(--accent-pink);">
-                            <div class="author-info">
-                                <h3>Jingliu Official <i class="ph-fill ph-check-circle" style="color: var(--primary-teal);"></i></h3>
-                                <p style="color: var(--text-muted); font-size: 12px;">Admin</p>
-                            </div>
-                            <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
-                                <div class="post-meta-time" style="margin-left: 0;">2 April 2026</div>
-                                <div class="post-menu-wrapper" style="position: relative;">
-                                    <button onclick="toggleMenu('post-menu-jingliu')" style="background:none; border:none; color:var(--text-muted); cursor:pointer; padding: 4px; transition: color 0.2s; display: flex;" onmouseover="this.style.color='var(--primary-teal)'" onmouseout="this.style.color='var(--text-muted)'">
-                                        <i class="ph-bold ph-dots-three" style="font-size: 24px;"></i>
-                                    </button>
-                                    <div id="post-menu-jingliu" style="display:none; position: absolute; right: 0; top: 100%; background: var(--white); border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 10; overflow: hidden; min-width: 140px;">
-                                        <button onclick="shareLink('Jingliu Official')" style="width:100%; padding:10px 16px; text-align:left; background:none; border:none; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-dark); display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='#f8fafb'" onmouseout="this.style.background='none'"><i class="ph-bold ph-share-network"></i> Bagikan</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="post-content-text">
-                            ${formatHashtags("Selamat datang di dinding komunitas! Jangan ragu untuk membagikan perasaanmu atau hasil #gacha terbarumu di sini.")}
-                        </div>
-                        <div class="post-engagement">
-                            <button class="engage-btn" style="color: var(--accent-pink);"><i class="ph-fill ph-heart"></i> 9,999</button>
-                        </div>
-                    </div>
-                `;
+        window.shareLink = function(name) {
+            const url = window.location.origin + window.location.pathname + "?komunitas_castorice_dari=" + encodeURIComponent(name);
+            navigator.clipboard.writeText(url).then(() => window.showToast('Tautan disalin!'));
+        };
+
+        window.handleCommentEnter = function(e, key) {
+            if (e.key === 'Enter') { e.preventDefault(); window.submitInlineComment(key); }
+        };
+
+        // --- RENDER ENGINE ---
+        window.renderPosts = function(postsList, filterTag = null, filterAuthor = null) {
+            const container = document.getElementById('postFeed');
+            const usersDB = JSON.parse(localStorage.getItem('usersDB')) || [];
+            let html = '';
+
+            let filtered = postsList;
+            if (filterAuthor) {
+                filtered = filtered.filter(p => p.authorName === filterAuthor);
+                html += `<div style="background:#f1f9fa;padding:16px;border-radius:12px;margin-bottom:24px;border:1px dashed var(--primary-teal);display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-weight:700;color:var(--primary-teal);">Postingan dari: ${filterAuthor}</span>
+                    <button onclick="window.location.href='posting.html'" style="background:var(--primary-teal);color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">Kembali</button>
+                </div>`;
+            } else if (filterTag) {
+                filtered = filtered.filter(p => p.content && p.content.includes('#' + filterTag));
+                html += `<div style="background:#f1f9fa;padding:16px;border-radius:12px;margin-bottom:24px;border:1px dashed var(--primary-teal);display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-weight:700;color:var(--primary-teal);">Tag: #${filterTag}</span>
+                    <button onclick="window.location.href='posting.html'" style="background:var(--primary-teal);color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">Hapus</button>
+                </div>`;
             }
 
-            feedContainer.innerHTML = allHtml;
-        }
+            if (filtered.length === 0 && (filterTag || filterAuthor)) {
+                html += `<div style="text-align:center;padding:40px;color:var(--text-muted);">Belum ada postingan di sini.</div>`;
+            }
+
+            filtered.forEach(post => {
+                const u = usersDB.find(user => user.username === post.authorName);
+                const avatar = post.authorAvatar || (u && u.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.authorName)}&background=38495a&color=fff`;
+                const likedBy = post.likedBy || {};
+                const isLiked = window.activeUserObj && likedBy[window.activeUserObj.username];
+                const comments = Object.entries(post.comments || {}).map(([k,v])=>({key:k,...v}));
+                
+                let commentsHtml = '<div style="margin-top:16px;padding-top:16px;border-top:1px solid #f0f0f0;display:flex;flex-direction:column;gap:12px;">';
+                comments.forEach(c => {
+                    const cu = usersDB.find(user => user.username === c.author);
+                    const cav = (cu && cu.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.author)}&background=1aa39a&color=fff`;
+                    commentsHtml += `<div style="background:#f8fafb;padding:10px;border-radius:8px;display:flex;gap:12px;">
+                        <img src="${cav}" style="width:24px;height:24px;border-radius:50%;">
+                        <div style="flex:1;"><div style="font-weight:700;font-size:12px;">${c.author}</div><div style="font-size:13px;">${c.text}</div></div>
+                    </div>`;
+                });
+                if (window.activeUserObj) {
+                    commentsHtml += `<div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+                        <input type="text" id="commentInput_${post.firebaseKey}" placeholder="Tulis balasan..." style="flex:1;padding:8px 16px;border-radius:20px;border:1px solid #eee;" onkeypress="window.handleCommentEnter(event, '${post.firebaseKey}')">
+                        <button onclick="window.submitInlineComment('${post.firebaseKey}')" style="background:var(--primary-teal);color:white;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;"><i class="ph-bold ph-paper-plane-right"></i></button>
+                    </div>`;
+                }
+                commentsHtml += '</div>';
+
+                const media = (post.image ? `<img src="${post.image}" style="width:100%;border-radius:12px;margin-top:16px;">` : '') + 
+                              (post.link ? `<a href="${post.link}" target="_blank" style="display:block;margin-top:12px;color:var(--primary-teal);font-size:13px;">${post.link}</a>` : '');
+
+                html += `<div class="post-card">
+                    <div class="post-header-author">
+                        <img src="${avatar}" class="author-avatar">
+                        <div class="author-info"><h3>${post.authorName}</h3><p>${post.timestamp ? new Date(post.timestamp).toLocaleString() : 'Baru saja'}</p></div>
+                        <div style="margin-left:auto;position:relative;" class="post-menu-wrapper">
+                            <button onclick="window.toggleMenu('post-menu-${post.firebaseKey}')" style="background:none;border:none;cursor:pointer;"><i class="ph-bold ph-dots-three" style="font-size:24px;"></i></button>
+                            <div id="post-menu-${post.firebaseKey}" style="display:none;position:absolute;right:0;background:white;border:1px solid #eee;border-radius:8px;z-index:99;min-width:120px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+                                ${window.activeUserObj && post.authorName === window.activeUserObj.username ? `
+                                    <button onclick="window.editPost('${post.firebaseKey}')" style="width:100%;padding:10px;text-align:left;border:none;background:none;cursor:pointer;">Edit</button>
+                                    <button onclick="window.deletePost('${post.firebaseKey}')" style="width:100%;padding:10px;text-align:left;border:none;background:none;cursor:pointer;color:red;">Hapus</button>
+                                ` : ''}
+                                <button onclick="window.shareLink('${post.authorName}')" style="width:100%;padding:10px;text-align:left;border:none;background:none;cursor:pointer;">Bagikan</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-content-text">${window.formatHashtags(post.content)}${media}</div>
+                    <div class="post-engagement">
+                        <button class="engage-btn" onclick="window.toggleLike('${post.firebaseKey}')" style="${isLiked?'color:var(--accent-pink);':''}"><i class="${isLiked?'ph-fill':'ph'} ph-heart"></i> ${Object.keys(likedBy).length}</button>
+                        <button class="engage-btn" onclick="document.getElementById('commentInput_${post.firebaseKey}').focus()"><i class="ph ph-chat-circle"></i> ${comments.length}</button>
+                    </div>
+                    ${commentsHtml}
+                </div>`;
+            });
+            container.innerHTML = html;
+        };
+
+        window.formatHashtags = function(text) {
+            if(!text) return "";
+            return text.replace(/#(\w+)/g, '<span class="hashtag" onclick="window.renderPosts(window.currentPostsList, \'$1\')" style="color:var(--primary-teal);cursor:pointer;font-weight:600;">#$1</span>');
+        };
+
+        // --- AUTH & DATA INIT ---
+        document.addEventListener("DOMContentLoaded", function () {
+            const userStr = localStorage.getItem('activeUser');
+            window.activeUserObj = userStr ? JSON.parse(userStr) : null;
+
+            const headerRight = document.querySelector('.header-right');
+            if (window.activeUserObj) {
+                headerRight.innerHTML = `<div style="display:flex;align-items:center;gap:16px;">
+                    <a href="profile.html" style="font-weight:800;font-size:15px;color:var(--text-dark);text-decoration:none;">${window.activeUserObj.username}</a>
+                    <button onclick="localStorage.removeItem('activeUser');window.location.reload();" class="btn btn-outline" style="padding:8px 20px;">Logout</button>
+                </div>`;
+                document.getElementById('activeUserName').innerText = window.activeUserObj.username;
+                document.getElementById('activeUserAvatar').src = window.activeUserObj.avatar || 'chibi_jingliu.png';
+            } else {
+                headerRight.innerHTML = `<a href="login.html" class="btn btn-outline">Log in</a> <a href="signup.html" class="btn btn-primary">Sign up</a>`;
+                document.getElementById('createPostCard').style.display = 'none';
+                document.getElementById('createPostNavBtn').style.display = 'none';
+            }
+
+            const authorQuery = new URLSearchParams(window.location.search).get('komunitas_castorice_dari');
+            if (window.isFirebaseSetup && window.postsRef) {
+                window.postsRef.orderByChild('timestamp').on('value', snap => {
+                    const data = snap.val() || {};
+                    const list = Object.entries(data).map(([k,v])=>({firebaseKey:k,...v})).sort((a,b)=>b.timestamp-a.timestamp);
+                    window.currentPostsList = list; window.renderPosts(list, null, authorQuery);
+                });
+            } else {
+                const local = JSON.parse(localStorage.getItem('postsDB')) || [];
+                window.currentPostsList = local; window.renderPosts(local, null, authorQuery);
+            }
+        });
     </script>
 </body>
-
 </html>
