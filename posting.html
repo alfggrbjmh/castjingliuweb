@@ -825,19 +825,14 @@
             const usersDB = JSON.parse(localStorage.getItem('usersDB')) || [];
             const user = usersDB.find(u => u.username === authorName);
 
-            let linkToShare = window.location.origin + "/profile.html?user=" + encodeURIComponent(authorName);
-
             if (user && user.socialLink && user.socialLink.trim() !== '') {
-                linkToShare = user.socialLink;
-                navigator.clipboard.writeText(linkToShare).then(() => {
-                    alert('Tautan (' + linkToShare + ') dari akun ' + authorName + ' yang terdaftar berhasil disalin! Siap disebarkan ke media sosial.');
+                navigator.clipboard.writeText(user.socialLink).then(() => {
+                    alert('Tautan media sosial (' + user.socialLink + ') dari akun ' + authorName + ' berhasil disalin! Siap disebarkan ke media.');
                 }).catch(err => {
-                    alert('Gagal menyalin tautan: ' + linkToShare);
+                    alert('Gagal menyalin tautan: ' + user.socialLink);
                 });
             } else {
-                navigator.clipboard.writeText(linkToShare).then(() => {
-                    alert('Tautan profil ' + authorName + ' berhasil disalin! Siap disebarkan ke media sosial.');
-                });
+                alert('Gagal Membagikan: Akun ' + authorName + ' tidak/belum menautkan URL media sosial ke profil mereka.');
             }
 
             document.querySelectorAll('[id^="menu-"]').forEach(m => m.style.display = 'none');
