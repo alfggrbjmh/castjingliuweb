@@ -367,8 +367,12 @@
 
 
 
+            // Cek URL Query untuk filter profil akun spesifik
+            const urlParams = new URLSearchParams(window.location.search);
+            const authorQuery = urlParams.get('komunitas_castorice_dari');
+
             // Render postingan dari Local Storage (Visible to all)
-            renderPosts();
+            renderPosts(null, authorQuery);
         });
 
         function seedDatabase() {
@@ -490,21 +494,34 @@
         }
 
         // Fungsi mencetak postingan ke layar
-        function renderPosts(filterTag = null) {
+        function renderPosts(filterTag = null, filterAuthor = null) {
             const feedContainer = document.getElementById('postFeed');
             const postsDB = JSON.parse(localStorage.getItem('postsDB')) || [];
             const usersDB = JSON.parse(localStorage.getItem('usersDB')) || [];
 
             let allHtml = '';
 
-            // Logika menampilkan filter aktif jika hashtag diklik
+            // Logika menampilkan filter aktif jika hashtag diklik atau author dibuka dari url
             let postsToRender = postsDB;
-            if (filterTag) {
-                postsToRender = postsDB.filter(p => p.content.includes('#' + filterTag));
+            
+            if (filterAuthor) {
+                postsToRender = postsToRender.filter(p => p.authorName === filterAuthor);
+                allHtml += `
+                    <div style="background: #f1f9fa; padding: 16px 20px; border-radius: 12px; margin-bottom: 24px; border: 1px dashed var(--primary-teal); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 700; color: var(--primary-teal); font-size: 14px;"><i class="ph-bold ph-user" style="vertical-align:-2px;"></i> Melirik Postingan dari Akun: ${filterAuthor}</span>
+                        <button onclick="window.location.href='posting.html'" style="background: var(--primary-teal); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"><i class="ph-bold ph-list"></i> Lihat Semua Timeline</button>
+                    </div>
+                `;
+                // Jika tidak ada postingan sama sekali
+                if (postsToRender.length === 0) {
+                    allHtml += `<div style="text-align:center; padding:40px; color:var(--text-muted); font-weight:600;">Belum ada postingan dari akun ini.</div>`;
+                }
+            } else if (filterTag) {
+                postsToRender = postsToRender.filter(p => p.content.includes('#' + filterTag));
                 allHtml += `
                     <div style="background: #f1f9fa; padding: 16px 20px; border-radius: 12px; margin-bottom: 24px; border: 1px dashed var(--primary-teal); display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-weight: 700; color: var(--primary-teal); font-size: 14px;"><i class="ph-bold ph-hash" style="vertical-align:-2px;"></i> Hasil Pencarian untuk Topik: #${filterTag}</span>
-                        <button onclick="renderPosts()" style="background: var(--primary-teal); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"><i class="ph-bold ph-x"></i> Hapus Filter</button>
+                        <button onclick="window.location.href='posting.html'" style="background: var(--primary-teal); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"><i class="ph-bold ph-x"></i> Hapus Filter</button>
                     </div>
                 `;
             }
@@ -622,7 +639,7 @@
             });
 
             // Post default selalu di ujung paling bawah, hanya render jika tidak difilter
-            if (!filterTag) {
+            if (!filterTag && !filterAuthor) {
                 allHtml += `
                     <div class="post-card border-glow">
                         <div class="post-header-author" style="margin-bottom: 0;">
@@ -811,12 +828,72 @@
             }
         }
 
+        // Custom UI Toast Notification
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            const icon = isError ? '<i class="ph-fill ph-warning-circle" style="color:#ea4335; font-size:24px;"></i>' : '<i class="ph-fill ph-check-circle" style="color:var(--primary-teal); font-size:24px;"></i>';
+            toast.innerHTML = `
+                <div style="display:flex; align-items:center; gap:12px;">
+                    ${icon}
+                    <span style="font-size:14px; font-weight:600; color:var(--text-dark);">${message}</span>
+                </div>
+            `;
+            toast.style.position = 'fixed';
+            toast.style.bottom = '40px';
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%) translateY(100px)';
+            toast.style.background = 'var(--white)';
+            toast.style.padding = '16px 24px';
+            toast.style.borderRadius = '50px';
+            toast.style.boxShadow = '0 12px 32px rgba(0,0,0,0.12)';
+            toast.style.border = '1px solid rgba(106, 208, 201, 0.2)';
+            toast.style.zIndex = '9999';
+            toast.style.opacity = '0';
+            toast.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            
+            document.body.appendChild(toast);
+            
+            requestAnimationFrame(() => {
+                toast.style.transform = 'translateX(-50%) translateY(0)';
+                toast.style.opacity = '1';
+            });
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateX(-50%) translateY(100px)';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+
         // Fitur Salin Teks
         function copyComment(elementId) {
             const textToCopy = document.getElementById('comment-text-' + elementId).innerText;
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                alert("Komentar disalin ke Papan Klip (Clipboard)!");
-            });
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    showToast("Komentar disalin ke Papan Klip (Clipboard)!");
+                }).catch(() => fallbackCopy(textToCopy));
+            } else {
+                fallbackCopy(textToCopy);
+            }
+
+            function fallbackCopy(text) {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-9999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast("Komentar disalin ke Papan Klip (Clipboard)!");
+                } catch (err) {
+                    showToast("Browser tidak mendukung salin otomatis.", true);
+                }
+                document.body.removeChild(textArea);
+            }
+
             document.querySelectorAll('[id^="menu-"]').forEach(m => m.style.display = 'none');
         }
 
@@ -825,15 +902,38 @@
             const usersDB = JSON.parse(localStorage.getItem('usersDB')) || [];
             const user = usersDB.find(u => u.username === authorName);
 
+            // Cek apakah punya socmed eksternal, jika tidak, arahkan url ke aplikasi kita sendiri
+            let urlToShare = window.location.origin + window.location.pathname + "?komunitas_castorice_dari=" + encodeURIComponent(authorName);
+            
             if (user && user.socialLink && user.socialLink.trim() !== '') {
-                navigator.clipboard.writeText(user.socialLink).then(() => {
-                    alert('Tautan media sosial (' + user.socialLink + ') dari akun ' + authorName + ' berhasil disalin! Siap disebarkan ke media.');
-                }).catch(err => {
-                    alert('Gagal menyalin tautan: ' + user.socialLink);
-                });
-            } else {
-                alert('Gagal Membagikan: Akun ' + authorName + ' tidak/belum menautkan URL media sosial ke profil mereka.');
+                urlToShare = user.socialLink;
             }
+
+            // Fallback Eksekusi Salin URL yang sangat aman untuk Local File (Tanpa HTTPS/Server)
+            function executeCopy(text) {
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        showToast(`Tautan (${text}) berhasil disalin! Silakan bagikan ke teman Anda.`);
+                    }).catch(err => showToast('Gagal menyalin tautan.', true));
+                } else {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    textArea.style.position = "fixed";
+                    textArea.style.left = "-9999px";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        showToast(`Tautan (${text}) berhasil disalin! Silakan bagikan ke teman Anda.`);
+                    } catch (err) {
+                        showToast('Browser Anda tidak mendukung penyalinan otomatis.', true);
+                    }
+                    document.body.removeChild(textArea);
+                }
+            }
+
+            executeCopy(urlToShare);
 
             document.querySelectorAll('[id^="menu-"]').forEach(m => m.style.display = 'none');
             document.querySelectorAll('[id^="post-menu-"]').forEach(m => m.style.display = 'none');
