@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Castorice & Jingliu - Explore Discovery</title>
+    <!-- Phosphor Icons -->
+    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0; padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .explore-container {
+            height: 100vh;
+            width: 100%;
+            scroll-snap-type: y mandatory;
+            overflow-y: scroll;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .explore-container::-webkit-scrollbar { display: none; }
+
+        .explore-item {
+            height: 100vh;
+            width: 100%;
+            scroll-snap-align: start;
+            position: relative;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .media-container {
+            height: 100%;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .media-content {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000;
+        }
+
+        /* UI Overlays */
+        .overlay-right {
+            position: absolute;
+            right: 16px;
+            bottom: 15vh;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .overlay-btn {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .overlay-btn:hover { background: var(--primary-teal); transform: scale(1.1); }
+        .overlay-btn span { font-size: 11px; font-weight: 700; margin-top: 2px; }
+        .overlay-btn i { font-size: 24px; }
+
+        .overlay-bottom {
+            position: absolute;
+            left: 20px;
+            bottom: 40px;
+            right: 80px;
+            z-index: 10;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .author-info { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .author-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; }
+        .author-name { font-weight: 700; font-size: 16px; }
+        
+        .post-text {
+            font-size: 14px;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .explore-nav {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+        }
+
+        .nav-left { display: flex; align-items: center; gap: 20px; }
+        .nav-btn {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .nav-btn.active { color: var(--primary-teal); border-color: var(--primary-teal); }
+
+        .hashtag-list { display: flex; gap: 12px; }
+        .tag-badge {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Mobile Bottom Nav Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 40px;
+            padding: 12px 24px;
+            display: none; /* Hide on desktop */
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+        }
+
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            transition: all 0.3s;
+            flex: 1;
+        }
+
+        .bottom-nav-item.active {
+            color: var(--primary-teal);
+        }
+
+        .bottom-nav-item i { font-size: 24px; }
+        .bottom-nav-item span { font-size: 10px; font-weight: 700; text-transform: uppercase; }
+
+        .post-btn-center {
+            background: var(--primary-teal);
+            color: white !important;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: -30px;
+            box-shadow: 0 8px 16px rgba(26, 163, 154, 0.4);
+            border: 4px solid #000;
+        }
+
+        /* Mobile Responsive Adjustments */
+        @media (max-width: 768px) {
+            .explore-nav {
+                padding: 16px;
+                background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            }
+            .nav-left .nav-btn:not(.active) { display: none; } /* Hide Home btn on mobile top */
+            .nav-right { display: none; } /* Hide Posting btn on mobile top */
+            
+            .bottom-nav { display: flex; }
+            
+            .overlay-right { bottom: 20vh; right: 12px; }
+            .overlay-bottom { left: 16px; bottom: 120px; right: 80px; }
+        }
+
+        .empty-state {
+            color: white;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .empty-state i { font-size: 64px; color: var(--primary-teal); opacity: 0.5; margin-bottom: 20px; display: block; }
+    </style>
+</head>
+
+<body>
+    <div class="explore-nav">
+        <div class="nav-left">
+            <a href="index.html" class="nav-btn"><i class="ph ph-house" style="margin-right:8px;"></i> Home</a>
+            <div class="nav-btn active">Explore Now</div>
+        </div>
+        <div class="nav-right">
+            <button class="nav-btn" onclick="location.reload()"><i class="ph ph-arrows-clockwise"></i></button>
+        </div>
+    </div>
+
+    <!-- Bottom Nav for Mobile -->
+    <div class="bottom-nav">
+        <a href="index.html" class="bottom-nav-item">
+            <i class="ph ph-house"></i>
+            <span>Home</span>
+        </a>
+        <a href="explorenow.html" class="bottom-nav-item active">
+            <i class="ph-fill ph-compass"></i>
+            <span>Explore</span>
+        </a>
+        <a href="posting.html" class="bottom-nav-item post-btn-center">
+            <i class="ph ph-plus-bold"></i>
+        </a>
+        <a href="Message.html" class="bottom-nav-item">
+            <i class="ph ph-chat-circle"></i>
+            <span>Chat</span>
+        </a>
+        <a href="profile.html" class="bottom-nav-item">
+            <i class="ph ph-user"></i>
+            <span>Profile</span>
+        </a>
+    </div>
+
+    <div class="explore-container" id="exploreFeed">
+        <!-- Explorer Items rendered here -->
+    </div>
+
+    <script>
+        const activeUserStr = localStorage.getItem('activeUser');
+        const activeUserObj = activeUserStr ? JSON.parse(activeUserStr) : null;
+
+        function loadExploreData() {
+            const container = document.getElementById('exploreFeed');
+            const postsDB = JSON.parse(localStorage.getItem('postsDB')) || [];
+            const usersDB = JSON.parse(localStorage.getItem('usersDB')) || [];
+            
+            // Filter hanya yang punya media (Gambar/Video)
+            const mediaPosts = postsDB.filter(p => p.image || p.video);
+            
+            if (mediaPosts.length === 0) {
+                container.innerHTML = `
+                    <div class="explore-item">
+                        <div class="empty-state">
+                            <i class="ph ph-video"></i>
+                            <h2>Belum ada media untuk dijelajahi</h2>
+                            <p>Bantu komunitas dengan mengunggah foto atau video pertama!</p>
+                            <a href="posting.html" class="nav-btn" style="display:inline-block; margin-top:20px; background:var(--primary-teal); border:none;">Mulai Posting</a>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            let html = '';
+            mediaPosts.forEach(post => {
+                const u = usersDB.find(user => user.username === post.authorName);
+                const avatar = (u && u.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.authorName)}&background=random&color=fff&bold=true`;
+                const likedBy = post.likedBy || {};
+                const isLiked = activeUserObj && likedBy[activeUserObj.username];
+                const comments = Object.keys(post.comments || {}).length;
+
+                let mediaHtml = '';
+                if(post.video) {
+                    mediaHtml = `<video src="${post.video}" class="media-content" loop muted playsinline></video>`;
+                } else {
+                    mediaHtml = `<img src="${post.image}" class="media-content">`;
+                }
+
+                html += `
+                <div class="explore-item">
+                    <div class="media-container">
+                        ${mediaHtml}
+                        
+                        <div class="overlay-right">
+                            <div class="overlay-btn" onclick="toggleLike('${post.firebaseKey || post.id}')" style="${isLiked?'background:var(--accent-pink); border-color:white;':''}">
+                                <i class="${isLiked?'ph-fill':'ph'} ph-heart"></i>
+                                <span>${Object.keys(likedBy).length}</span>
+                            </div>
+                            <div class="overlay-btn" onclick="window.location.href='posting.html'">
+                                <i class="ph ph-chat-circle"></i>
+                                <span>${comments}</span>
+                            </div>
+                            <div class="overlay-btn">
+                                <i class="ph ph-share-network"></i>
+                            </div>
+                        </div>
+
+                        <div class="overlay-bottom">
+                            <div class="author-info" onclick="window.location.href='posting.html?user=${post.authorName}'" style="cursor:pointer;">
+                                <img src="${avatar}" class="author-avatar">
+                                <span class="author-name">@${post.authorName}</span>
+                            </div>
+                            <div class="post-text">${post.content || ''}</div>
+                            <div class="hashtag-list" style="margin-bottom: 16px;">
+                                ${extractHashtags(post.content).map(tag => `<span class="tag-badge">#${tag}</span>`).join('')}
+                            </div>
+                            
+                            <!-- Komentar Langsung -->
+                            ${activeUserObj ? `
+                                <div style="display:flex; gap:10px; align-items:center; background:rgba(255,255,255,0.1); backdrop-filter:blur(20px); padding:8px 16px; border-radius:30px; border:1px solid rgba(255,255,255,0.2);">
+                                    <input type="text" id="comment_${post.firebaseKey || post.id}" placeholder="Kirim komentar..." style="background:none; border:none; color:white; flex:1; outline:none; font-size:14px;" onkeypress="if(event.key==='Enter') submitComment('${post.firebaseKey || post.id}')">
+                                    <button onclick="submitComment('${post.firebaseKey || post.id}')" style="background:none; border:none; color:var(--primary-teal); cursor:pointer; font-size:20px;"><i class="ph-fill ph-paper-plane-right"></i></button>
+                                </div>
+                            ` : `<div style="font-size:12px; opacity:0.7; font-style:italic;">Silakan login untuk berkomentar</div>`}
+                        </div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+
+            // --- Auto Play Logic ---
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const video = entry.target.querySelector('video');
+                    if (video) {
+                        if (entry.isIntersecting) video.play();
+                        else video.pause();
+                    }
+                });
+            }, { threshold: 0.8 });
+
+            document.querySelectorAll('.explore-item').forEach(item => observer.observe(item));
+        }
+
+        function extractHashtags(str) {
+            if(!str) return [];
+            const matches = str.match(/#([\w\u00C0-\u017F]+)/g);
+            return matches ? matches.map(m => m.replace('#', '')) : [];
+        }
+
+        function toggleLike(id) {
+            let db = JSON.parse(localStorage.getItem('postsDB')) || [];
+            const idx = db.findIndex(p => (p.firebaseKey == id || p.id == id));
+            if (idx > -1 && activeUserObj) {
+                const myName = activeUserObj.username;
+                if(!db[idx].likedBy) db[idx].likedBy = {};
+                db[idx].likedBy[myName] ? delete db[idx].likedBy[myName] : db[idx].likedBy[myName] = true;
+                localStorage.setItem('postsDB', JSON.stringify(db));
+                loadExploreData();
+            } else if (!activeUserObj) {
+                showToast("Silakan login untuk memberikan Like!", true);
+            }
+        }
+
+        function submitComment(id) {
+            const input = document.getElementById('comment_' + id);
+            if (!input || !activeUserObj) return;
+            const text = input.value.trim();
+            if (!text) return;
+
+            let db = JSON.parse(localStorage.getItem('postsDB')) || [];
+            const idx = db.findIndex(p => (p.firebaseKey == id || p.id == id));
+
+            if (idx > -1) {
+                if (!db[idx].comments) db[idx].comments = {};
+                const cKey = 'c-' + Date.now();
+                db[idx].comments[cKey] = { author: activeUserObj.username, text: text };
+                localStorage.setItem('postsDB', JSON.stringify(db));
+                input.value = '';
+                showToast("Komentar terkirim!");
+                loadExploreData();
+            }
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.style = `position:fixed; bottom:40px; left:50%; transform:translateX(-50%); background:rgba(255,255,255,0.1); backdrop-filter:blur(20px); color:white; padding:12px 24px; border-radius:30px; border:1px solid rgba(255,255,255,0.2); z-index:9999; font-size:14px; font-weight:600; box-shadow:0 8px 32px rgba(0,0,0,0.4);`;
+            toast.innerHTML = (isError ? '❌ ' : '✅ ') + message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        document.addEventListener('DOMContentLoaded', loadExploreData);
+    </script>
+</body>
+</html>

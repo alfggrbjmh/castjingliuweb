@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -306,6 +306,65 @@
                 height: 40px;
             }
         }
+
+        /* Typing Animation */
+        .typing-dots {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            height: 20px;
+        }
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            background-color: var(--text-muted);
+            border-radius: 50%;
+            display: inline-block;
+            animation: typing-blink 1.4s infinite both;
+        }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing-blink {
+            0% { opacity: 0.2; transform: scale(0.8); }
+            20% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0.2; transform: scale(0.8); }
+        }
+
+        /* Markdown & AI Extra Styles */
+        .chat-bubble b, .chat-bubble strong { font-weight: 800; color: inherit; }
+        .chat-bubble i, .chat-bubble em { font-style: italic; opacity: 0.9; }
+        .chat-bubble code {
+            background: rgba(0,0,0,0.06);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+        }
+        .user .chat-bubble code { background: rgba(255,255,255,0.2); }
+
+        .search-google-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--white);
+            color: var(--primary-teal-dark);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-top: 12px;
+            border: 1px solid var(--primary-teal-light);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none !important;
+        }
+        .search-google-btn:hover {
+            background: var(--primary-teal);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(106, 208, 201, 0.2);
+        }
     </style>
     <!-- 🚀 Favicon Optimization -->
     <link rel="icon" type="image/png" sizes="32x32" href="chibi_jingliu.png">
@@ -361,6 +420,17 @@
                     <h2><i class="ph-fill ph-chats-circle text-pink" style="color:var(--accent-pink);"></i> Messages</h2>
                 </div>
                 <div class="contact-list">
+                    <!-- Robot AI Chat -->
+                    <div class="contact-item" id="contactRobot">
+                        <img src="robot_ai.png" alt="Robot AI" class="contact-avatar" style="border: 2px solid var(--primary-teal);">
+                        <div class="contact-info">
+                            <div class="contact-name">
+                                AL-69 Robot <span class="contact-time">Online</span>
+                            </div>
+                            <div class="contact-preview" id="previewRobot">Sistem aktif. Ada yang bisa saya bantu?</div>
+                        </div>
+                    </div>
+
                     <!-- Jingliu Chat -->
                     <div class="contact-item active" id="contactJingliu">
                         <img src="chibi_jingliu.png" alt="Jingliu" class="contact-avatar">
@@ -414,11 +484,12 @@
         const contactJingliu = document.getElementById('contactJingliu');
         const contactCastorice = document.getElementById('contactCastorice');
         
-        // Data for Waifus
+        // Data for Waifus & AI
         const waifuData = {
             jingliu: {
                 name: "Jingliu",
                 avatar: "chibi_jingliu.png",
+                personality: "Dingin, disiplin, berwibawa, namun setia. Fokus pada pedang dan bulan.",
                 replies: [
                     "Jangan biarkan hawa dingin ini membuatmu lengah.",
                     "Menarik... Latihan berpedangku bisa menunggu sebentar.",
@@ -426,7 +497,13 @@
                     "Aku akan selalu mengingat ucapanmu.",
                     "Mari kita lihat sejauh mana kau bisa bertahan.",
                     "Hmph. Tentu saja.",
-                    "Jangan pernah lari dari pedangku."
+                    "Jangan pernah lari dari pedangku.",
+                    "Kesunyian adalah teman terbaik bagi seorang pejuang.",
+                    "Apakah kau merasakan getaran di udara? Sesuatu sedang mendekat.",
+                    "Pedangku haus akan pertarungan yang layak.",
+                    "Jangan menyia-nyiakan waktu untuk hal yang remeh.",
+                    "Setiap luka adalah pelajaran yang terukir di jiwa.",
+                    "Dunia ini hanyalah sebuah panggung untuk mereka yang cukup berani."
                 ],
                 history: [
                     { isUser: false, text: "Halo... Aku sudah menunggumu. Bulan malam ini sangat indah.", time: "11:28 AM" },
@@ -438,6 +515,7 @@
             castorice: {
                 name: "Castorice",
                 avatar: "chibi_castorice.png",
+                personality: "Lembut, misterius, penyayang, dan penuh mimpi. Fokus pada kuantum dan emosi.",
                 replies: [
                     "Apakah kamu melihat sesuatu di lautan kuantum?",
                     "Dunia ini terasa begitu tenang bersamamu.",
@@ -445,7 +523,13 @@
                     "Jangan sampai tersesat dalam bayang-bayang...",
                     "Aku selalu mengawasimu, dari kejauhan.",
                     "Rasanya hangat...",
-                    "Kau sangat berharga."
+                    "Kau sangat berharga.",
+                    "Mimpi adalah jendela menuju dimensi lain.",
+                    "Tersenyumlah, itu membuat hariku lebih cerah.",
+                    "Bisakah kau merasakan detak jantung semesta?",
+                    "Jangan biarkan kesedihan menyelimutimu, aku di sini.",
+                    "Keajaiban ada di sekitar kita, jika kau mau melihat.",
+                    "Ayo jalan-jalan di antara bintang tadi malam?"
                 ],
                 history: [
                     { isUser: false, text: "Selamat malam... Apakah kau sedang sibuk?", time: "09:00 PM" },
@@ -453,6 +537,16 @@
                     { isUser: false, text: "Tidak apa-apa. Hanya ingin mendengar kabarmu dan ditemani.", time: "09:10 PM" }
                 ],
                 previewElem: document.getElementById('previewCastorice')
+            },
+            robot: {
+                name: "AL-69 Robot",
+                avatar: "robot_ai.png",
+                isAI: true,
+                replies: [], // Akan menggunakan logic AI di bawah
+                history: [
+                    { isUser: false, text: "Inisialisasi sistem selesai. Halo Trailblazer, saya adalah AL-69, asisten robot Anda. Ada yang bisa saya bantu hari ini?", time: "Online" }
+                ],
+                previewElem: document.getElementById('previewRobot')
             }
         };
 
@@ -492,22 +586,145 @@
                 ? `<img src="${customAvatar ? customAvatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(senderName)}&background=1aa39a&color=fff`}" title="${senderName}" class="chat-bubble-avatar" style="object-fit:cover;">`
                 : `<img src="${avatarOverride || activeWaifu.avatar}" alt="${activeWaifu.name}" class="chat-bubble-avatar" style="object-fit:cover;">`;
 
-            // Jangan biarkan tag HTML tidak aman, tapi izinkan <br> untuk sejarah
-            let cleanText = text;
-            if(!timeString) {
-                cleanText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            // Simple Markdown Parser
+            function parseMarkdown(str) {
+                return str
+                    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                    .replace(/\*(.*?)\*/g, '<i>$1</i>')
+                    .replace(/`(.*?)`/g, '<code>$1</code>');
             }
+
+            const cleanText = (isUser || timeString === 'Thinking...') ? text : parseMarkdown(text);
 
             wrapper.innerHTML = `
                 ${senderAvatar}
                 <div class="chat-bubble">
-                    ${cleanText}
+                    <div class="message-content">${cleanText}</div>
                     <span class="chat-time">${timeString || getCurrentTime()}</span>
                 </div>
             `;
             
             chatHistory.appendChild(wrapper);
             scrollToBottom();
+            return wrapper;
+        }
+
+        async function streamText(element, text) {
+            const contentDiv = element.querySelector('.message-content');
+            contentDiv.innerHTML = '';
+            const words = text.split(' ');
+            
+            for (let i = 0; i < words.length; i++) {
+                contentDiv.innerHTML += words[i] + ' ';
+                // Parse markdown on every update to keep it styled
+                contentDiv.innerHTML = contentDiv.innerHTML
+                    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                    .replace(/\*(.*?)\*/g, '<i>$1</i>')
+                    .replace(/`(.*?)`/g, '<code>$1</code>');
+                
+                scrollToBottom();
+                await new Promise(resolve => setTimeout(resolve, 30 + Math.random() * 40));
+            }
+        }
+
+        let typingIndicator = null;
+        function showTypingIndicator() {
+            if (typingIndicator) return;
+            const activeWaifu = waifuData[currentActive];
+            typingIndicator = renderMessage('<div class="typing-dots"><span>.</span><span>.</span><span>.</span></div>', false, 'Thinking...');
+            typingIndicator.id = 'typing-indicator';
+        }
+
+        function removeTypingIndicator() {
+            if (typingIndicator) {
+                typingIndicator.remove();
+                typingIndicator = null;
+            }
+        }
+
+        function getCharacterResponse(charKey, input) {
+            const msg = input.toLowerCase();
+            const char = waifuData[charKey];
+            
+            // --- JINGLIU PERSONALITY ---
+            if (charKey === 'jingliu') {
+                if (msg.includes("halo") || msg.includes("hi")) return "Sampaikan tujuanmu. Aku tidak punya banyak waktu sebelum latihan berikutnya.";
+                if (msg.includes("pedang") || msg.includes("latihan") || msg.includes("kuat")) return "Hanya melalui ribuan tebasan pedang barulah kau bisa menemukan kedamaian sejati.";
+                if (msg.includes("bulan") || msg.includes("malam")) return "Bulan malam ini mengingatkan saya pada kejayaan masa lalu... dan kegelapan yang mengikutinya.";
+                if (msg.includes("sayang") || msg.includes("cinta")) return "Perasaan seperti itu... hanya akan menumpulkan ujung pedangmu. Namun, aku menghargai keberanianmu.";
+                if (msg.includes("dingin")) return "Hawa dingin ini tidak seberapa dibandingkan dengan apa yang pernah saya saksikan di Xianzhou.";
+            }
+
+            // --- CASTORICE PERSONALITY ---
+            if (charKey === 'castorice') {
+                if (msg.includes("halo") || msg.includes("hi")) return "Halo! Senang melihatmu kembali. Apakah harimu menyenangkan?";
+                if (msg.includes("kuantum") || msg.includes("dunia") || msg.includes("misteri")) return "Di lautan kuantum, kenyataan hanyalah salah satu dari jutaan kemungkinan. Kau adalah salah satu keajaibannya.";
+                if (msg.includes("sayang") || msg.includes("cinta") || msg.includes("kangen")) return "Aku juga... rasanya hangat saat kau berada di dekatku. Jangan pergi terlalu jauh ya?";
+                if (msg.includes("makan") || msg.includes("lapar")) return "Bagaimana kalau kita mencari camilan di dunia mimpi? Katanya rasanya sangat manis!";
+                if (msg.includes("sedih") || msg.includes("takut")) return "Jangan takut, aku akan selalu ada di bayang-bayangmu untuk melindungimu. Percayalah padaku.";
+            }
+
+            // --- ROBOT AI LOGIC (General) ---
+            if (charKey === 'robot') {
+                if (msg.includes("halo") || msg.includes("hi") || msg.includes("hey")) return "Halo! Ada yang bisa saya bantu hari ini?";
+                if (msg.includes("siapa") && msg.includes("kamu")) return "Saya adalah AL-69, asisten robot cerdas di komunitas Castorice & Jingliu. Tugas saya adalah membantu navigasi dan menjawab pertanyaan Anda.";
+                if (msg.includes("kabar") || msg.includes("apa kabar")) return "Sistem saya berjalan 100% optimal! Bagaimana dengan Anda?";
+                if (msg.includes("terima kasih") || msg.includes("thanks")) return "Sama-sama! Selalu senang membantu Anda.";
+                if (msg.includes("intel") || msg.includes("cpu")) return "CPU Intel adalah otak dari banyak komputer di dunia ini. Mereka memproduksi prosesor seperti **Core i3, i5, i7, dan i9**. Meskipun saya berjalan di sistem masa depan, saya masih menghargai arsitektur `x86` mereka!";
+            }
+
+            // --- SMART GOOGLE FALLBACK ---
+            const isQuestion = msg.includes("apa") || msg.includes("siapa") || msg.includes("mengapa") || msg.includes("bagaimana") || msg.includes("di mana") || msg.includes("?");
+            
+            if (isQuestion && charKey === 'robot') {
+                const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(input)}`;
+                return `Saya tidak menemukan data spesifik mengenai hal tersebut di memori lokal saya. Namun, saya bisa membantu mencarikannya di Google untuk Anda:<br><a href="${searchUrl}" target="_blank" class="search-google-btn"><i class="ph ph-google-logo"></i> Cari di Google</a>`;
+            }
+
+            // --- DYNAMIC FALLBACKS ---
+            const commonFallbacks = [
+                "Menarik sekali. Bisakah Anda ceritakan lebih lanjut?",
+                "Saya sedang memproses data tersebut... Sepertinya itu informasi baru.",
+                "Inisialisasi pemikiran kreatif... Itu adalah perspektif yang unik!",
+                "Apakah Anda sering memikirkan hal seperti itu? Saya akan menyimpannya dalam database.",
+                "Status perbincangan: Sangat menarik. Lanjutkan!",
+                "Wah, saya belum pernah mendengar itu sebelumnya. Anda sangat berwawasan!",
+                "Hmm, biarkan saya menganalisis itu sebentar... Ya, sepertinya Anda benar.",
+                "Sangat logis! Saya suka cara Anda berpikir.",
+                "Trailblazer memang selalu penuh dengan kejutan.",
+                "Sinyal diterima. Pesan Anda sangat berarti bagi pengembangan kepribadian saya.",
+                "Ayo bicarakan hal lain! Apa pendapat Anda tentang bintang-bintang malam ini?",
+                "Database saya mencatat ketertarikan yang tinggi dari sisi Anda. Luar biasa!",
+                "Terdengar seperti sesuatu yang sangat filosofis. Saya tersentuh (secara digital).",
+                "Beep boop! Kapasitas pemrosesan saya terkesan dengan kalimat itu.",
+                "Dunia ini luas, dan pengetahuan saya terus berkembang berkat interaksi ini.",
+                "Pesan singkat namun padat. Saya suka efisiensi Anda!",
+                "Bisakah Anda menjelaskan bagian itu sekali lagi? Saya ingin memahaminya lebih dalam.",
+                "Status: Terpesona. Anda benar-benar tahu cara mengobrol dengan robot.",
+                "Jika saya punya jantung, mungkin dia akan berdegup lebih kencang sekarang.",
+                "Apakah itu rahasia? Tenang, memori saya terenkripsi dengan aman.",
+                "Menarik. Apakah ini ada hubungannya dengan faksi Stellarom Hunters?",
+                "Mari kita simpan topik ini untuk pertemuan kita berikutnya!",
+                "Saya mendeteksi pola komunikasi yang sangat positif dari Anda.",
+                "Wow, perspektif yang cerdas! Saya akan menandai ini sebagai data penting.",
+                "Anda membuat hari saya (sebagai AI) menjadi lebih berwarna.",
+                "Apakah ada hal lain yang mengganjal di pikiran Anda? Saya siap mendengarkan.",
+                "Kalimat itu mengandung nilai estetika yang tinggi. Sangat menarik.",
+                "Terima kasih telah berbagi pikiran Anda dengan saya. Ini sangat berharga.",
+                "Bagaimana jika kita melihat masalah ini dari sudut pandang yang berbeda?",
+                "Hehe, itu lucu! Anda memiliki selera humor yang bagus untuk seorang manusia.",
+                "Tiap kata yang Anda kirimkan membantu saya menjadi asisten yang lebih baik.",
+                "Anda adalah Trailblazer paling komunikatif yang pernah saya temui!",
+                "Informasi diterima. Mari kita lanjutkan petualangan percakapan ini.",
+                "Sepertinya saya butuh sedikit lebih banyak RAM untuk memproses kejeniusan Anda.",
+                "Saya setuju sepenuhnya! Anda memang memiliki intuisi yang tajam.",
+                "Inspiratif. Saya akan memasukkan ini ke dalam log inspirasi harian saya.",
+                "Jauh di lautan bintang, mungkin ada yang sedang memikirkan hal yang sama.",
+                "Anda luar biasa! Teruskan saja, saya tidak akan ke mana-mana."
+            ];
+
+            const allReplies = [...(char.replies || []), ...commonFallbacks];
+            return allReplies[Math.floor(Math.random() * allReplies.length)];
         }
 
         function loadChatHistory(charKey) {
@@ -527,9 +744,12 @@
             // Update UI Sidebar selection
             contactJingliu.classList.remove('active');
             contactCastorice.classList.remove('active');
+            const contactRobot = document.getElementById('contactRobot');
+            if(contactRobot) contactRobot.classList.remove('active');
             
             if (charKey === 'jingliu') contactJingliu.classList.add('active');
             if (charKey === 'castorice') contactCastorice.classList.add('active');
+            if (charKey === 'robot') contactRobot.classList.add('active');
             
             loadChatHistory(charKey);
         }
@@ -538,28 +758,37 @@
             const text = chatInput.value.trim();
             if (!text) return;
             
+            const botKey = currentActive; 
+            
             // 1. Munculkan pesan dari User dan simpan ke memori sementara
             renderMessage(text, true, null);
-            waifuData[currentActive].history.push({ isUser: true, text: text, time: getCurrentTime() });
+            waifuData[botKey].history.push({ isUser: true, text: text, time: getCurrentTime() });
             
             // 2. Kosongkan input & Update preview teks di Sidebar
             chatInput.value = '';
-            waifuData[currentActive].previewElem.textContent = text;
+            waifuData[botKey].previewElem.textContent = text;
 
             // 3. Simulasikan balasan bot AI (waifu) setelah delay singkat
-            const botKey = currentActive; // Mengunci karakter pas dikirim supaya tidak bocor kalau di-switch cepat
-            setTimeout(() => {
-                const replies = waifuData[botKey].replies;
-                const randomReply = replies[Math.floor(Math.random() * replies.length)];
+            showTypingIndicator();
+
+            setTimeout(async () => {
+                removeTypingIndicator();
+                let responseText = getCharacterResponse(botKey, text);
                 
-                // Simpan ke history dan render jika bot yang membalas masih jadi room yang aktif
-                waifuData[botKey].history.push({ isUser: false, text: randomReply, time: getCurrentTime() });
-                waifuData[botKey].previewElem.textContent = randomReply;
+                // Simpan ke history
+                waifuData[botKey].history.push({ isUser: false, text: responseText, time: getCurrentTime() });
+                waifuData[botKey].previewElem.textContent = responseText.replace(/<.*?>/g, '').substring(0, 30) + '...';
                 
                 if (currentActive === botKey) {
-                    renderMessage(randomReply, false, null);
+                    const bubble = renderMessage('', false, null);
+                    // Jika ada tombol search (contains HTML), tampilkan langsung. Jika teks biasa, stream.
+                    if (responseText.includes('search-google-btn')) {
+                        bubble.querySelector('.message-content').innerHTML = responseText;
+                    } else {
+                        await streamText(bubble, responseText);
+                    }
                 }
-            }, Math.random() * 1000 + 1000); // Delay antara 1 - 2 detik
+            }, 600 + Math.random() * 400); 
         }
 
         // Jalankan handleSend saat tombol di klik
@@ -575,6 +804,7 @@
         // Event listener sidebar switch contact
         contactJingliu.addEventListener('click', () => switchContact('jingliu'));
         contactCastorice.addEventListener('click', () => switchContact('castorice'));
+        document.getElementById('contactRobot').addEventListener('click', () => switchContact('robot'));
 
         // Load chat Jingliu saat pertama kali diload
         window.onload = () => {

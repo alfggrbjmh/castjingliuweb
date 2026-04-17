@@ -142,59 +142,121 @@
         .post-card {
             background: var(--white);
             border-radius: var(--border-radius-lg);
-            padding: 24px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
-            margin-bottom: 24px;
+            padding: 0; /* TikTok style: padding comes from internal elements */
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+            margin-bottom: 40px;
             border: 1px solid rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .post-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(106, 208, 201, 0.15);
         }
 
-        .post-meta-time {
-            font-size: 12px;
-            color: var(--text-muted);
-            font-weight: 400;
-            margin-left: auto;
+        .post-card-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .post-card-body {
+            position: relative;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            width: 100%;
+        }
+
+        .post-card-media {
+            width: 100%;
+            display: block;
+            object-fit: contain;
+            max-height: 85vh; /* TikTok feel: tall media */
+        }
+
+        .post-card-overlay-actions {
+            position: absolute;
+            right: 16px;
+            bottom: 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 5;
+        }
+
+        .overlay-btn {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .overlay-btn:hover {
+            transform: scale(1.1);
+            background: var(--primary-teal);
+            border-color: var(--white);
+        }
+
+        .overlay-btn span {
+            font-size: 11px;
+            font-weight: 800;
+            margin-top: -2px;
+        }
+
+        .overlay-btn i { font-size: 22px; }
+
+        .post-card-content {
+            padding: 20px;
+            background: var(--white);
         }
 
         .post-content-text {
-            margin-top: 16px;
             font-size: 15px;
             line-height: 1.6;
             color: var(--text-dark);
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
-        .post-engagement {
-            margin-top: 20px;
-            padding-top: 16px;
-            border-top: 1px solid rgba(0, 0, 0, 0.05);
-            display: flex;
-            gap: 24px;
+        .hashtag {
+            color: var(--primary-teal);
+            font-weight: 700;
+            text-decoration: none;
         }
+        .hashtag:hover { text-decoration: underline; }
 
-        .engage-btn {
-            background: none;
-            border: none;
+        /* Video Progress Sim */
+        .video-container { position: relative; width: 100%; }
+        .video-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            z-index: 5;
             display: flex;
             align-items: center;
             gap: 6px;
-            color: var(--text-muted);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .engage-btn i {
-            font-size: 20px;
-        }
-
-        .engage-btn:hover {
-            color: var(--accent-pink);
         }
     </style>
     <!-- 🚀 Favicon Optimization -->
@@ -237,6 +299,7 @@
             <nav class="header-center">
                 <a href="index.html">Home</a>
                 <a href="home.html">Journey</a>
+                <a href="explorenow.html">Explore</a>
                 <a href="Message.html">Message</a>
                 <a href="lihatriwayat.html">History</a>
             </nav>
@@ -292,8 +355,8 @@
 
                 <div class="post-actions">
                     <div class="action-icon-btns">
-                        <input type="file" id="imageUploader" accept="image/*" style="display:none;">
-                        <button title="Unggah Gambar" onclick="document.getElementById('imageUploader').click()"><i
+                        <input type="file" id="mediaUploader" accept="image/*,video/*" style="display:none;">
+                        <button title="Unggah Media (Foto/Video)" onclick="document.getElementById('mediaUploader').click()"><i
                                 class="ph ph-image"></i></button>
                         <button title="Bagikan Tautan" onclick="window.attachLink()"><i class="ph ph-link"></i></button>
                     </div>
@@ -309,14 +372,38 @@
     </div>
 
     <script>
-        // PROTEKSI: Harus login dulu untuk masuk web
-        if(!localStorage.getItem('activeUser')) {
-            window.location.replace("login.html");
-        }
-        
         // Sistem sekarang berjalan 100% secara LOKAL (tanpa Firebase)
         
+        window.seedDatabase = function() {
+            const existing = localStorage.getItem('postsDB');
+            if (!existing || JSON.parse(existing).length === 0) {
+                const initialPosts = [
+                    {
+                        firebaseKey: 'seed-1',
+                        authorName: "Jingliu Official",
+                        authorAvatar: "chibi_jingliu.png",
+                        content: "Selamat datang di komunitas portal Castorice & Jingliu! Bagikan momen gacha dan artwork terbaikmu di sini. **Status: Aktif.**",
+                        timestamp: Date.now() - 3600000,
+                        likedBy: {},
+                        comments: {}
+                    },
+                    {
+                        firebaseKey: 'seed-2',
+                        authorName: "Castorice Admin",
+                        authorAvatar: "chibi_jingliu.png",
+                        content: "Keajaiban Kuantum sedang menunggumu. Jangan lupa cek tab Journey untuk melihat riwayat perjalanan kita!",
+                        image: "hero_banner.png",
+                        timestamp: Date.now() - 7200000,
+                        likedBy: {},
+                        comments: {}
+                    }
+                ];
+                localStorage.setItem('postsDB', JSON.stringify(initialPosts));
+            }
+        };
+
         window.loadLocalData = function() {
+            window.seedDatabase(); // Pastikan ada data awal agar bisa dibaca
             let local = JSON.parse(localStorage.getItem('postsDB')) || [];
             
             // --- AUTO REPAIR DATA LAMA ---
@@ -375,32 +462,20 @@
             if (!isVisible) el.style.display = 'block';
         };
 
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.post-menu-wrapper')) {
-                document.querySelectorAll('[id^="post-menu-"]').forEach(m => m.style.display = 'none');
-            }
-        });
-
-        // --- ATTACHMENTS SYSTEM ---
-        window.pendingImage = null;
-        window.pendingLink = null;
-
-        document.getElementById('imageUploader').addEventListener('change', function (e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function (event) {
-                window.pendingImage = event.target.result;
-                document.getElementById('attachedPreview').style.display = 'flex';
-                document.getElementById('previewImage').style.display = 'block';
-                document.getElementById('previewImage').src = window.pendingImage;
-            };
-            reader.readAsDataURL(file);
-        });
+        window.clearAttachments = function() {
+            window.pendingImage = null; 
+            window.pendingVideo = null;
+            window.pendingLink = null;
+            document.getElementById('mediaUploader').value = '';
+            document.getElementById('attachedPreview').style.display = 'none';
+            document.getElementById('previewImage').style.display = 'none';
+            document.getElementById('previewLink').style.display = 'none';
+        };
 
         window.attachLink = function() {
             const url = prompt("Masukkan Tautan (URL):", "https://");
             if (url && url.length > 8) {
+                window.clearAttachments();
                 window.pendingLink = url;
                 document.getElementById('attachedPreview').style.display = 'flex';
                 document.getElementById('previewLink').style.display = 'block';
@@ -408,18 +483,45 @@
             }
         };
 
-        window.clearAttachments = function() {
-            window.pendingImage = null; window.pendingLink = null;
-            document.getElementById('imageUploader').value = '';
-            document.getElementById('attachedPreview').style.display = 'none';
-        };
+        // --- UNIT MEDIA UPLOADER (FOTO & VIDEO) ---
+        window.pendingImage = null;
+        window.pendingVideo = null;
 
-        // --- POSTING & SOCIAL CORE ---
+        document.getElementById('mediaUploader').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const isVideo = file.type.startsWith('video/');
+            const maxSize = (isVideo ? 100 : 5) * 1024 * 1024; // 100MB Video / 5MB Image
+
+            if (file.size > maxSize) {
+                window.showToast(`File terlalu besar! Maks ${isVideo?'100MB':'5MB'}.`, true);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                window.clearAttachments();
+                if (isVideo) {
+                    window.pendingVideo = event.target.result;
+                    document.getElementById('attachedPreview').style.display = 'flex';
+                    document.getElementById('previewLink').style.display = 'block';
+                    document.getElementById('previewLink').innerHTML = `<i class="ph-bold ph-video-camera"></i> Video siap diunggah (${(file.size/1024/1024).toFixed(1)}MB)`;
+                } else {
+                    window.pendingImage = event.target.result;
+                    document.getElementById('attachedPreview').style.display = 'flex';
+                    document.getElementById('previewImage').style.display = 'block';
+                    document.getElementById('previewImage').src = window.pendingImage;
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+
         window.submitPost = function() {
             if (!window.activeUserObj) { window.showToast('Silakan login dulu!', true); return; }
             const textArea = document.getElementById('postInputText');
             const textContent = textArea.value.trim();
-            if (!textContent && !window.pendingImage && !window.pendingLink) { window.showToast('Tuliskan sesuatu dulu!', true); return; }
+            if (!textContent && !window.pendingImage && !window.pendingLink && !window.pendingVideo) { window.showToast('Tuliskan sesuatu dulu!', true); return; }
 
             const cleanContent = textContent.replace(/</g, '&lt;').replace(/>/g, '&gt;');
             let localDB = JSON.parse(localStorage.getItem('postsDB')) || [];
@@ -430,6 +532,7 @@
                 authorAvatar: window.activeUserObj.avatar || '',
                 content: cleanContent, 
                 image: window.pendingImage, 
+                video: window.pendingVideo,
                 link: window.pendingLink,
                 timestamp: Date.now(), 
                 likedBy: {}, 
@@ -439,8 +542,9 @@
             localStorage.setItem('postsDB', JSON.stringify(localDB));
             textArea.value = ''; 
             window.clearAttachments();
+            window.pendingVideo = null;
             window.currentPostsList = localDB;
-            window.renderPosts(localDB, null, window.activeUserObj.username); // Otomatis saring ke akun sendiri
+            window.renderPosts(localDB);
             window.showToast('Berhasil diposting!');
         };
 
@@ -494,6 +598,23 @@
             localStorage.setItem('postsDB', JSON.stringify(db));
             window.renderPosts(db);
             window.showToast('Postingan dihapus');
+        };
+
+        window.toggleCommentLike = (postId, commentId) => {
+            if (!window.activeUserObj) {
+                window.showToast("Silakan login untuk menyukai komentar!", true);
+                return;
+            }
+            let db = JSON.parse(localStorage.getItem('postsDB')) || [];
+            const pIdx = db.findIndex(p => p.id == postId || p.firebaseKey == postId);
+            if (pIdx > -1 && db[pIdx].comments && db[pIdx].comments[commentId]) {
+                const c = db[pIdx].comments[commentId];
+                if (!c.likedBy) c.likedBy = {};
+                const myName = window.activeUserObj.username;
+                c.likedBy[myName] ? delete c.likedBy[myName] : c.likedBy[myName] = true;
+                localStorage.setItem('postsDB', JSON.stringify(db));
+                window.renderPosts(db);
+            }
         };
 
         window.deleteComment = function(postKey, commentKey) {
@@ -585,81 +706,129 @@
         };
 
         // --- RENDER ENGINE ---
-        window.renderPosts = function(postsList, filterTag = null, filterAuthor = null) {
+        window.renderPosts = function(postsList, filterTag = null, filterAuthor = null, hashtagFilter = null) {
             const container = document.getElementById('postFeed');
             const usersDB = JSON.parse(localStorage.getItem('usersDB')) || [];
-            let html = '';
+            
+            // Simple Markdown & Hashtag Parser (di dalam agar terupdate)
+            function parseMarkdown(str) {
+                if(!str) return "";
+                return str
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/`(.*?)`/g, '<code>$1</code>')
+                    .replace(/#([\w\u00C0-\u017F]+)/g, (match, tag) => {
+                        return `<a href="#" class="hashtag" onclick="window.renderPosts(window.currentPostsList, null, null, '${tag}'); return false;">#${tag}</a>`;
+                    });
+            }
 
+            let html = '';
             let filtered = postsList;
-            if (filterAuthor) {
+
+            if (hashtagFilter) {
+                filtered = filtered.filter(p => (p.content || '').toLowerCase().includes('#' + hashtagFilter.toLowerCase()));
+                html += `<div style="background:#f1f9fa;padding:16px;border-radius:12px;margin-bottom:24px;border:1px dashed var(--primary-teal);display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-weight:700;color:var(--primary-teal);">Topic: #${hashtagFilter}</span>
+                    <button onclick="window.location.reload()" style="background:var(--primary-teal);color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">Reset</button>
+                </div>`;
+            } else if (filterAuthor) {
                 filtered = filtered.filter(p => p.authorName === filterAuthor);
                 html += `<div style="background:#f1f9fa;padding:16px;border-radius:12px;margin-bottom:24px;border:1px dashed var(--primary-teal);display:flex;justify-content:space-between;align-items:center;">
                     <span style="font-weight:700;color:var(--primary-teal);">Postingan dari: ${filterAuthor}</span>
-                    <button onclick="window.location.href='posting.html'" style="background:var(--primary-teal);color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">Kembali</button>
+                    <button onclick="window.location.reload()" style="background:var(--primary-teal);color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">Reset</button>
                 </div>`;
             }
 
             if (filtered.length === 0) {
                 html += `<div style="text-align:center;padding:60px 40px;background:white;border-radius:30px;box-shadow:var(--card-shadow);">
                     <i class="ph ph-unite" style="font-size:48px; color:var(--primary-teal); opacity:0.5; margin-bottom:16px; display:block;"></i>
-                    <p style="font-weight:700; color:var(--text-dark);">Belum ada postingan saat ini.</p>
+                    <p style="font-weight:700; color:var(--text-dark);">Belum ada postingan untuk kategori ini.</p>
                 </div>`;
             }
 
             filtered.forEach(post => {
                 const u = usersDB.find(user => user.username === post.authorName);
-                
-                // --- LOGIKA AVATAR PINTAR BERDASARKAN PENDAFTARAN ---
                 let avatar = `https://ui-avatars.com/api/?background=random&color=fff&bold=true&name=${encodeURIComponent(post.authorName)}`;
-                
-                if (u && u.avatar) {
-                    avatar = u.avatar; // Jika akun terdaftar punya foto, gunakan itu
-                } else if (post.authorAvatar) {
-                    avatar = post.authorAvatar; // Jika tidak, gunakan foto saat postingan dibuat
-                } else if (post.authorName === "Jingliu Official" || post.authorName === "Castorice Admin") {
-                    avatar = "chibi_jingliu.png"; // Foto khusus akun resmi
-                }
-                
+                if (u && u.avatar) avatar = u.avatar;
+                else if (post.authorAvatar) avatar = post.authorAvatar;
+                else if (post.authorName === "Jingliu Official") avatar = "chibi_jingliu.png";
+
                 const likedBy = post.likedBy || {};
                 const isLiked = window.activeUserObj && likedBy[window.activeUserObj.username];
                 const comments = Object.entries(post.comments || {}).map(([k,v])=>({key:k,...v}));
                 const postId = post.firebaseKey || post.id;
-                
-                let commentsHtml = '<div style="margin-top:16px;padding-top:16px;border-top:1px solid #f0f0f0;display:flex;flex-direction:column;gap:12px;">';
-                comments.forEach(c => {
+
+                // Media TikTok Style Logic
+                let mediaHtml = '';
+                if(post.video) {
+                    mediaHtml = `<div class="post-card-body video-container">
+                                    <video src="${post.video}" class="post-card-media" loop controls muted playsinline></video>
+                                    <div class="post-card-overlay-actions">
+                                        <button class="overlay-btn" onclick="window.toggleLike('${postId}')" style="${isLiked?'background:var(--accent-pink); border-color:white;':''}">
+                                            <i class="${isLiked?'ph-fill':'ph'} ph-heart"></i>
+                                            <span>${Object.keys(likedBy).length}</span>
+                                        </button>
+                                        <button class="overlay-btn" onclick="const inpt = document.getElementById('commentInput_${postId}'); if(inpt) inpt.focus();">
+                                            <i class="ph ph-chat-circle"></i>
+                                            <span>${comments.length}</span>
+                                        </button>
+                                        <button class="overlay-btn" onclick="window.sharePost('${post.authorName}')">
+                                            <i class="ph ph-share-network"></i>
+                                        </button>
+                                    </div>
+                                </div>`;
+                } else if(post.image) {
+                    mediaHtml = `<div class="post-card-body">
+                                    <img src="${post.image}" class="post-card-media">
+                                    <div class="post-card-overlay-actions">
+                                        <button class="overlay-btn" onclick="window.toggleLike('${postId}')" style="${isLiked?'background:var(--accent-pink); border-color:white;':''}">
+                                            <i class="${isLiked?'ph-fill':'ph'} ph-heart"></i>
+                                            <span>${Object.keys(likedBy).length}</span>
+                                        </button>
+                                        <button class="overlay-btn" onclick="const inpt = document.getElementById('commentInput_${postId}'); if(inpt) inpt.focus();">
+                                            <i class="ph ph-chat-circle"></i>
+                                            <span>${comments.length}</span>
+                                        </button>
+                                        <button class="overlay-btn" onclick="window.sharePost('${post.authorName}')">
+                                            <i class="ph ph-share-network"></i>
+                                        </button>
+                                    </div>
+                                </div>`;
+                }
+
+                const commentsListHtml = Object.entries(post.comments || {}).map(([k,c]) => {
                     const cu = usersDB.find(user => user.username === c.author);
                     let cav = 'https://ui-avatars.com/api/?background=random&color=fff&name=' + encodeURIComponent(c.author);
                     if(cu && cu.avatar) cav = cu.avatar;
-                    else if(c.author === "Jingliu Official" || c.author === "Castorice Admin") cav = "chibi_jingliu.png";
-
                     const isMyComment = window.activeUserObj && c.author === window.activeUserObj.username;
+                    const cLikes = Object.keys(c.likedBy || {}).length;
+                    const isCommentLiked = window.activeUserObj && c.likedBy && c.likedBy[window.activeUserObj.username];
                     
-                    commentsHtml += `<div style="background:#f8fafb;padding:10px;border-radius:12px;display:flex;gap:12px;position:relative;">
-                        <img src="${cav}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;">
+                    return `<div style="background:#f8fafb;padding:12px;border-radius:12px;display:flex;gap:12px;margin-bottom:8px;">
+                        <img src="${cav}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">
                         <div style="flex:1;">
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <div style="font-weight:700;font-size:12px;">${c.author}</div>
-                                ${isMyComment ? `<button onclick="window.deleteComment('${postId}', '${c.key}')" style="color:#ea4335; font-size:14px; opacity:0.6; border:none; background:none; cursor:pointer;"><i class="ph ph-trash"></i></button>` : ''}
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                                <div style="font-weight:700;font-size:12px;color:var(--text-dark);">@${c.author}</div>
+                                <div style="display:flex;gap:10px;align-items:center;">
+                                    <button onclick="window.toggleCommentLike('${postId}','${k}')" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:4px;font-size:12px;color:${isCommentLiked?'var(--accent-pink)':'#888'};">
+                                        <i class="${isCommentLiked?'ph-fill':'ph'} ph-heart"></i>
+                                        <span>${cLikes > 0 ? cLikes : ''}</span>
+                                    </button>
+                                    ${isMyComment ? `<button onclick="window.deleteComment('${postId}','${k}')" style="color:#ea4335;border:none;background:none;cursor:pointer;font-size:14px;"><i class="ph ph-trash"></i></button>`:''}
+                                </div>
                             </div>
-                            <div style="font-size:13px;">${c.text}</div>
+                            <div style="font-size:13px;color:#444;line-height:1.4;">${c.text}</div>
                         </div>
                     </div>`;
-                });
-                if (window.activeUserObj) {
-                    commentsHtml += `<div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
-                        <input type="text" id="commentInput_${postId}" placeholder="Tulis balasan..." style="flex:1;padding:8px 16px;border-radius:20px;border:1px solid #eee;" onkeypress="if(event.key==='Enter') window.submitInlineComment('${postId}')">
-                        <button onclick="window.submitInlineComment('${postId}')" style="background:var(--primary-teal);color:white;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;"><i class="ph-bold ph-paper-plane-right"></i></button>
-                    </div>`;
-                }
-                commentsHtml += '</div>';
-
-                const media = (post.image ? `<img src="${post.image}" style="width:100%;border-radius:12px;margin-top:16px;">` : '') + 
-                              (post.link ? `<a href="${post.link}" target="_blank" style="display:block;margin-top:12px;color:var(--primary-teal);font-size:13px;">${post.link}</a>` : '');
+                }).join('');
 
                 html += `<div class="post-card">
-                    <div class="post-header-author">
-                        <img src="${avatar}" class="author-avatar">
-                        <div class="author-info"><h3>${post.authorName}</h3><p>${post.timestamp ? new Date(post.timestamp).toLocaleString() : 'Baru saja'}</p></div>
+                    <div class="post-card-header">
+                        <img src="${avatar}" class="author-avatar" style="width:40px; height:40px;">
+                        <div class="author-info">
+                            <h3 style="font-size:15px;">${post.authorName}</h3>
+                            <p style="font-size:12px;">${post.timestamp ? new Date(post.timestamp).toLocaleString() : 'Baru saja'}</p>
+                        </div>
                         <div style="margin-left:auto;position:relative;" class="post-menu-wrapper">
                             <button onclick="window.toggleMenu('post-menu-${postId}')" style="background:none;border:none;cursor:pointer;"><i class="ph-bold ph-dots-three" style="font-size:24px;"></i></button>
                             <div id="post-menu-${postId}" style="display:none;position:absolute;right:0;background:white;border:1px solid #eee;border-radius:8px;z-index:99;min-width:140px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
@@ -671,12 +840,23 @@
                             </div>
                         </div>
                     </div>
-                    <div class="post-content-text">${post.content}${media}</div>
-                    <div class="post-engagement">
-                        <button class="engage-btn" onclick="window.toggleLike('${postId}')" style="${isLiked?'color:var(--accent-pink);':''}"><i class="${isLiked?'ph-fill':'ph'} ph-heart"></i> ${Object.keys(likedBy).length}</button>
-                        <button class="engage-btn" onclick="const inpt = document.getElementById('commentInput_${postId}'); if(inpt) inpt.focus(); else window.showToast('Silakan login untuk berkomentar', true);"><i class="ph ph-chat-circle"></i> ${comments.length}</button>
+                    
+                    ${mediaHtml}
+
+                    <div class="post-card-content">
+                        <div class="post-content-text">${parseMarkdown(post.content)}</div>
+                        ${post.link ? `<a href="${post.link}" target="_blank" class="hashtag" style="display:block;margin-top:10px;font-size:13px;">${post.link}</a>` : ''}
+                        
+                        <div style="margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0;display:flex;flex-direction:column;gap:12px;">
+                            ${commentsListHtml}
+                            ${window.activeUserObj ? `
+                                <div style="display:flex;gap:8px;align-items:center;">
+                                    <input type="text" id="commentInput_${postId}" placeholder="Tulis komentar..." style="flex:1;padding:8px 16px;border-radius:20px;border:1px solid #eee;" onkeypress="if(event.key==='Enter') window.submitInlineComment('${postId}')">
+                                    <button onclick="window.submitInlineComment('${postId}')" style="background:var(--primary-teal);color:white;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;"><i class="ph-bold ph-paper-plane-right"></i></button>
+                                </div>
+                            ` : ''}
+                        </div>
                     </div>
-                    ${commentsHtml}
                 </div>`;
             });
             container.innerHTML = html;
@@ -709,12 +889,48 @@
 
             window.loadLocalData();
 
-            // Cek jika ada filter user dari URL (Misal dari Profile)
+            // --- TIKTOK AUTO-PLAY LOGIC ---
+            const observerOptions = {
+                root: null,
+                threshold: 0.6 // Video berputar jika 60% terlihat
+            };
+
+            const videoObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const video = entry.target;
+                    if (entry.isIntersecting) {
+                        video.play().catch(e => console.log("Autoplay blocked by browser", e));
+                    } else {
+                        video.pause();
+                    }
+                });
+            }, observerOptions);
+
+            // Re-bind observer setiap kali feed di-render
+            const originalRender = window.renderPosts;
+            window.renderPosts = function(...args) {
+                originalRender(...args);
+                setTimeout(() => {
+                    document.querySelectorAll('video').forEach(v => videoObserver.observe(v));
+                }, 100);
+            };
+
+            // Cek jika ada filter user dari URL (Misal dari Profile atau Link Share)
             const params = new URLSearchParams(window.location.search);
-            const userFilter = params.get('user');
+            const userFilter = params.get('user') || params.get('komunitas_castorice_dari');
+            
             if(userFilter) {
                 setTimeout(() => {
                     window.renderPosts(window.currentPostsList, null, userFilter);
+                    
+                    // Tambahkan Label Nama Akun di Feed jika difilter
+                    const feedInfo = document.querySelector('.section-header');
+                    if(feedInfo) {
+                        const filterTag = document.createElement('div');
+                        filterTag.style = "background:var(--primary-teal); color:white; padding:6px 16px; border-radius:20px; font-size:13px; font-weight:700; margin-top:10px; display:inline-flex; align-items:center; gap:8px;";
+                        filterTag.innerHTML = `Postingan @${userFilter} <a href="posting.html" style="color:white; opacity:0.7; text-decoration:none;">✕</a>`;
+                        feedInfo.appendChild(filterTag);
+                    }
                 }, 100);
             }
         });
