@@ -1,13 +1,14 @@
 // Konfigurasi Firebase Realtime Database
 // Ganti bagian ini dengan konfigurasi asli dari Firebase Console Anda
 const firebaseConfig = {
-    apiKey: "GANTI_API_KEY",
-    authDomain: "GANTI.firebaseapp.com",
-    databaseURL: "https://GANTI-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "GANTI_PROJECT_ID",
-    storageBucket: "GANTI.appspot.com",
-    messagingSenderId: "GANTI",
-    appId: "GANTI"
+    apiKey: "AIzaSyBiW3k6F4kueI7LXZMIszfydOmUnD6Rp5Y",
+    authDomain: "komunitas-jingliu.firebaseapp.com",
+    databaseURL: "https://komunitas-jingliu-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "komunitas-jingliu",
+    storageBucket: "komunitas-jingliu.firebasestorage.app",
+    messagingSenderId: "690815801281",
+    appId: "1:690815801281:web:b2309436f0ec46faea4140",
+    measurementId: "G-MY86827Z15"
 };
 
 // Inisialisasi Firebase
@@ -16,6 +17,9 @@ window.currentPostsList = window.currentPostsList || [];
 
 if (window.isFirebaseSetup) {
     firebase.initializeApp(firebaseConfig);
+    if (firebase.analytics) {
+        firebase.analytics();
+    }
     window.fbDB = firebase.database();
     window.postsRef = window.fbDB.ref('posts');
 } else {
@@ -231,11 +235,18 @@ window.toggleLike = function(firebaseKey) {
         return;
     }
 
+    // Fungsi sanitasi agar username aman jadi ID Firebase
+    const getSafeKey = (name) => name ? name.replace(/[.#$[\]]/g, "_") : "anonymous";
+    const safeUsername = getSafeKey(activeUser.username);
+
     if (window.isFirebaseSetup && window.postsRef) {
-        const likeRef = window.postsRef.child(firebaseKey).child('likedBy').child(activeUser.username);
+        const likeRef = window.postsRef.child(firebaseKey).child('likedBy').child(safeUsername);
         likeRef.once('value').then(snap => {
             if (snap.val()) likeRef.remove();
             else likeRef.set(true);
+        }).catch(e => {
+            console.error("Like error:", e);
+            showToast("Gagal memproses Like", true);
         });
     } else {
         let localDB = JSON.parse(localStorage.getItem('postsDB')) || [];

@@ -94,34 +94,33 @@
         </main>
     </div>
 
-    <!-- AUTH STATE CHECK -->
+    <!-- AUTH STATE CHECK & LOCAL DATA -->
     <script>
-        // Sesi Aktif Check (Opsional untuk halaman publik)
+        // PROTEKSI: Harus login dulu untuk masuk web
+        if(!localStorage.getItem('activeUser')) {
+            window.location.replace("login.html");
+        }
+
         const activeUserStr = localStorage.getItem('activeUser');
         const activeUserObj = activeUserStr ? JSON.parse(activeUserStr) : null;
 
         document.addEventListener("DOMContentLoaded", function() {
-            const activeUserStr = localStorage.getItem('activeUser');
-            if(activeUserStr) {
-                const activeUser = JSON.parse(activeUserStr);
+            if(activeUserObj) {
                 const headerRight = document.querySelector('.header-right');
                 if(headerRight) {
                     headerRight.innerHTML = `
                         <div style="display:flex; align-items:center; gap:16px;">
-                            <a href="profile.html" style="font-weight:800; font-size:15px; color:var(--text-dark); text-decoration:none; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-teal)'" onmouseout="this.style.color='var(--text-dark)'">
+                            <a href="profile.html" style="font-weight:800; font-size:15px; color:var(--text-dark); text-decoration:none;">
                                 <i class="ph-fill ph-user-circle" style="color:var(--primary-teal); font-size:22px; vertical-align:-5px; margin-right:4px;"></i> 
-                                ${activeUser.username}
+                                ${activeUserObj.username}
                             </a>
-                            <button onclick="logout()" class="btn btn-outline" style="padding: 10px 24px; font-size: 14px; border-color: rgba(0,0,0,0.1);">Log out</button>
+                            <button onclick="logout()" class="btn btn-outline" style="padding: 10px 24px; font-size: 14px;">Log out</button>
                         </div>
                     `;
                 }
-                
-                // Show Create Post button if logged in
                 const createBtn = document.querySelector('.icon-btn.teal-bg');
                 if(createBtn) createBtn.style.display = 'flex';
             } else {
-                // Not logged in: Show auth buttons
                 const headerRight = document.querySelector('.header-right');
                 if(headerRight) {
                     headerRight.innerHTML = `
@@ -129,28 +128,28 @@
                         <a href="signup.html" class="btn btn-primary" style="text-decoration: none;">Sign up</a>
                     `;
                 }
-                // Hide Create Post button for guest
                 const createBtn = document.querySelector('.icon-btn.teal-bg');
                 if(createBtn) createBtn.style.display = 'none';
             }
             
-            // Seed initial data if empty
+            // Seed Database jika kosong
             seedDatabase();
 
-            // Render History Post di Homepage (Public)
+            // Render Postingan Lokal ke Homepage
             renderIndexPosts();
         });
 
         function seedDatabase() {
-            if (!localStorage.getItem('postsDB')) {
+            const existing = localStorage.getItem('postsDB');
+            if (!existing || JSON.parse(existing).length === 0) {
                 const initialPosts = [
                     {
                         id: 1,
                         authorName: "Jingliu Official",
                         content: "Selamat datang Trailblazer! Gunakan halaman ini untuk berbagi momen gacha dan artwork favoritmu. #Jingliu #Castorice",
                         time: "1 jam yang lalu",
-                        likedBy: ["Admin"],
-                        comments: [{author: "Trailblazer", text: "Siap, terima kasih admin!"}]
+                        likedBy: {},
+                        comments: {}
                     },
                     {
                         id: 2,
@@ -158,24 +157,17 @@
                         content: "Keajaiban Kuantum sedang menunggumu. Sudahkah kalian melakukan Warp hari ini? #GachaLife",
                         time: "3 jam yang lalu",
                         image: "hero_banner.png",
-                        likedBy: [],
-                        comments: []
+                        likedBy: {},
+                        comments: {}
                     }
                 ];
                 localStorage.setItem('postsDB', JSON.stringify(initialPosts));
-            }
-            if (!localStorage.getItem('usersDB')) {
-                const initialUsers = [
-                    { username: "Jingliu Official", email: "admin@castorice-jingliu.com", avatar: "chibi_jingliu.png" },
-                    { username: "Castorice Admin", email: "mod@castorice-jingliu.com", avatar: "chibi_castorice.png" }
-                ];
-                localStorage.setItem('usersDB', JSON.stringify(initialUsers));
             }
         }
 
         function logout() {
             localStorage.removeItem('activeUser');
-            window.location.href = "login.html";
+            window.location.reload();
         }
 
         function renderIndexPosts() {
@@ -185,39 +177,43 @@
             const postsDB = JSON.parse(localStorage.getItem('postsDB')) || [];
             const usersDB = JSON.parse(localStorage.getItem('usersDB')) || [];
             if(postsDB.length === 0) {
-                feedContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 14px; grid-column: 1/-1;">Belum ada postingan komunitas. Jadilah yang pertama di halaman <a href="posting.html" style="color: var(--primary-teal); text-decoration:none;">Posting</a>!</p>';
+                feedContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 14px; grid-column: 1/-1;">Belum ada postingan komunitas.</p>';
                 return;
             }
 
             let html = '';
-            // Menampilkan maksimal 6 post paling baru
+            // Menampilkan maksimal 6 post lokal terbaru
             const recentPosts = postsDB.slice(0, 6);
             recentPosts.forEach(post => {
-                const authorUser = usersDB.find(u => u.username === post.authorName);
-                const avatar = authorUser && authorUser.avatar ? authorUser.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(post.authorName)}&background=38495a&color=fff`;
-                
+                const u = usersDB.find(user => user.username === post.authorName);
+                const avatar = (u && u.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.authorName)}&background=38495a&color=fff`;
+                const postTime = post.timestamp ? new Date(post.timestamp).toLocaleString() : (post.time || 'Baru');
+
                 let mediaSnippet = '';
                 if(post.image) {
-                    mediaSnippet = `<div style="margin-top: 16px; height: 140px; border-radius: 8px; overflow: hidden; border: 1px solid rgba(0,0,0,0.05);"><img src="${post.image}" style="width:100%; height:100%; object-fit:cover;"></div>`;
+                    mediaSnippet = `<div style="margin-top: 16px; height: 140px; border-radius: 8px; overflow: hidden;"><img src="${post.image}" style="width:100%; height:100%; object-fit:cover;"></div>`;
                 }
 
-                const likeCount = post.likedBy ? post.likedBy.length : 0;
-                const commentCount = post.comments ? post.comments.length : 0;
+                const likeCount = post.likedBy ? Object.keys(post.likedBy).length : 0;
+                const commentCount = post.comments ? Object.keys(post.comments).length : 0;
+
+                // Cek status Like User
+                const isLiked = activeUserObj && post.likedBy && post.likedBy[activeUserObj.username];
 
                 html += `
-                    <div style="background: var(--white); padding: 24px; border-radius: 16px; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 16px rgba(0,0,0,0.02); transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 24px rgba(0,0,0,0.06)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.02)'" onclick="window.location.href='posting.html'">
-                        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px;">
-                            <img src="${avatar}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                    <div class="post-card-index" style="background: var(--white); padding: 20px; border-radius: 16px; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 12px rgba(0,0,0,0.02); cursor: pointer;" onclick="window.location.href='posting.html'">
+                        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+                            <img src="${avatar}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
                             <div>
-                                <h3 style="font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 2px;">${post.authorName}</h3>
-                                <p style="font-size: 12px; color: var(--text-muted);">${post.time}</p>
+                                <h3 style="font-size: 14px; font-weight: 700; color: var(--text-dark); margin: 0;">${post.authorName}</h3>
+                                <p style="font-size: 11px; color: var(--text-muted); margin: 0;">${postTime}</p>
                             </div>
                         </div>
-                        <p style="font-size: 14px; color: var(--text-dark); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">${post.content}</p>
+                        <p style="font-size: 14px; color: var(--text-dark); line-height: 1.5; margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${post.content || ''}</p>
                         ${mediaSnippet}
-                        <div style="display: flex; gap: 16px; margin-top: 16px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 16px;">
-                            <span style="font-size: 13px; color: var(--text-muted); display:flex; align-items:center; gap:6px;"><i class="${likeCount > 0 ? 'ph-fill' : 'ph'} ph-heart" style="${likeCount > 0 ? 'color: var(--accent-pink)' : ''}"></i> ${likeCount}</span>
-                            <span style="font-size: 13px; color: var(--text-muted); display:flex; align-items:center; gap:6px;"><i class="ph ph-chat-circle"></i> ${commentCount}</span>
+                        <div style="display: flex; gap: 16px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #f8fafb;">
+                            <span style="font-size: 12px; color: var(--text-muted); display:flex; align-items:center; gap:4px;"><i class="${isLiked ? 'ph-fill' : 'ph'} ph-heart" style="${isLiked ? 'color:var(--accent-pink)' : ''}"></i> ${likeCount}</span>
+                            <span style="font-size: 12px; color: var(--text-muted); display:flex; align-items:center; gap:4px;"><i class="ph ph-chat-circle"></i> ${commentCount}</span>
                         </div>
                     </div>
                 `;
@@ -227,5 +223,3 @@
     </script>
 </body>
 </html>
-
-

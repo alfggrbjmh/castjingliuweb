@@ -32,7 +32,7 @@
         .auth-image {
             flex: 1.2;
             position: relative;
-            background: var(--primary-teal-dark);
+            background: linear-gradient(135deg, #1aa39a 0%, #6ad0c9 100%);
             display: none;
         }
         .auth-image img {
@@ -203,54 +203,86 @@
         </main>
     </div>
 
-    <!-- SCRIPT DATABASE MOCK UNTUK SIGNUP -->
+    <!-- CUSTOM TOAST NOTIFICATION SYSTEM -->
+    <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;"></div>
+
     <script>
-        document.getElementById('signupForm').addEventListener('submit', function(e) {
-            e.preventDefault(); // Mencegah reload halaman standar
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                background: ${isError ? '#ea4335' : 'linear-gradient(135deg, #1aa39a 0%, #6ad0c9 100%)'};
+                color: white;
+                padding: 16px 28px;
+                border-radius: 12px;
+                box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+                font-weight: 700;
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                animation: slideIn 0.3s ease forwards;
+            `;
             
-            // Mengambil inputan user
+            const icon = isError ? '<i class="ph-fill ph-warning-circle"></i>' : '<i class="ph-fill ph-check-circle"></i>';
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            
+            document.getElementById('toastContainer').appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+            @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+        `;
+        document.head.appendChild(style);
+
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
             const username = document.getElementById('regUsername').value.trim();
             const email = document.getElementById('regEmail').value.trim();
             const password = document.getElementById('regPassword').value;
             const socialLink = document.getElementById('regSocialLink').value.trim();
 
-            // Membuka database simulasi (localStorage browser)
             let usersDB = JSON.parse(localStorage.getItem('usersDB')) || [];
-            
-            // Validasi apakah email sudah terpakai
             const userExists = usersDB.some(user => user.email === email);
             if (userExists) {
-                alert("Pendaftaran Gagal: Email ini sudah terdaftar di sistem!");
+                showToast("Pendaftaran Gagal: Email ini sudah terdaftar!", true);
                 return;
             }
 
-            // Menyimpan user baru ke "database"
             const newUser = { 
                 id: Date.now(),
                 username: username, 
                 email: email, 
                 password: password,
                 socialLink: socialLink,
+                avatar: '',
                 createdAt: new Date().toLocaleDateString()
             };
             
             usersDB.push(newUser);
             localStorage.setItem('usersDB', JSON.stringify(usersDB));
 
-            // Auto Login session
             localStorage.setItem('activeUser', JSON.stringify({
                 username: username,
-                email: email
+                email: email,
+                avatar: ''
             }));
 
-            // Feedback sukses & Redirect ke Postingan
-            alert("Berhasil! Akun " + username + " telah dibuat dan langsung berhasil Log In.");
-            window.location.href = "posting.html";
+            showToast("Berhasil! Akun " + username + " telah dibuat.");
+            
+            setTimeout(() => {
+                window.location.href = "posting.html";
+            }, 1500);
         });
-    </script>
 
-    <!-- CEK SUDAH LOGIN & SEED MOCK DB -->
-    <script>
+        // Seed Database & Auto Redirect
         if (!localStorage.getItem('postsDB') || !localStorage.getItem('usersDB')) {
             if (!localStorage.getItem('usersDB')) {
                 localStorage.setItem('usersDB', JSON.stringify([
@@ -260,8 +292,8 @@
             }
             if (!localStorage.getItem('postsDB')) {
                 localStorage.setItem('postsDB', JSON.stringify([
-                    { id: 1, authorName: "Jingliu Official", content: "Selamat datang Trailblazer! Gunakan halaman ini untuk berbagi momen gacha dan artwork favoritmu. #Jingliu #Castorice", time: "1 jam yang lalu", likedBy: ["Admin"], comments: [{author: "Trailblazer", text: "Siap, terima kasih admin!"}] },
-                    { id: 2, authorName: "Castorice Admin", content: "Keajaiban Kuantum sedang menunggumu. Sudahkah kalian melakukan Warp hari ini? #GachaLife", time: "3 jam yang lalu", image: "hero_banner.png", likedBy: [], comments: [] }
+                    { id: 1, authorName: "Jingliu Official", content: "Selamat datang Trailblazer! Gunakan halaman ini untuk berbagi momen gacha dan artwork favoritmu. #Jingliu #Castorice", time: "1 jam yang lalu", likedBy: {}, comments: {} },
+                    { id: 2, authorName: "Castorice Admin", content: "Keajaiban Kuantum sedang menunggumu. Sudahkah kalian melakukan Warp hari ini? #GachaLife", time: "3 jam yang lalu", image: "hero_banner.png", likedBy: {}, comments: {} }
                 ]));
             }
         }

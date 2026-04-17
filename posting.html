@@ -246,6 +246,24 @@
         </header>
 
         <main class="feed-container">
+            <!-- COMMUNITY DASHBOARD HERO -->
+            <section class="hero" style="margin-bottom: 32px; min-height: 260px; background: linear-gradient(135deg, #1aa39a 0%, #6ad0c9 100%);">
+                <div class="hero-content" style="padding: 40px; background: none; backdrop-filter: none;">
+                    <div class="hero-badge" style="background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.3);">
+                        <span class="badge-icon"><i class="ph-fill ph-planet" style="color:white;"></i></span>
+                        <span class="badge-text" style="color:white;">Community Dashboard</span>
+                    </div>
+                    <h1 style="color: white; font-size: 38px; line-height: 1.1; margin-bottom: 12px; font-weight: 800;">Selamat Datang,<br><span id="welcomeUserName" style="color: #f1f9fa; text-shadow: 0 4px 12px rgba(0,0,0,0.1);">Trailblazer</span></h1>
+                    <p style="color: rgba(255,255,255,0.9); font-size: 15px; margin-bottom: 20px; max-width: 400px;">Jelajahi momen terbaru dan bagikan perjalananmu bersama ribuan Trailblazer lainnya.</p>
+                    <div style="display: flex; gap: 12px;">
+                        <button onclick="window.renderPosts(window.currentPostsList, null, window.activeUserObj.username)" class="btn btn-white" style="padding: 8px 20px; font-size: 13px; transform: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"><i class="ph-fill ph-user" style="margin-right: 6px;"></i> Lihat Postingan Saya</button>
+                    </div>
+                </div>
+                <div class="hero-image-wrapper" style="mask-image: linear-gradient(to left, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%); opacity: 0.8;">
+                    <img src="artwork_castorice.png" alt="Community Banner" style="transform: translate(-30%, -50%) scale(1.1); filter: brightness(1.1);">
+                </div>
+            </section>
+
             <!-- Form Buat Post Baru -->
             <div class="create-post-card" id="createPostCard">
                 <div class="post-header-author">
@@ -290,30 +308,53 @@
         </main>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-
     <script>
-        // === CONFIGURATION & DB INITIALIZATION ===
-        const firebaseConfig = {
-            apiKey: "GANTI_API_KEY",
-            authDomain: "GANTI.firebaseapp.com",
-            databaseURL: "https://GANTI-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "GANTI_PROJECT_ID",
-            storageBucket: "GANTI.appspot.com",
-            messagingSenderId: "GANTI",
-            appId: "GANTI"
-        };
-
-        window.isFirebaseSetup = firebaseConfig.apiKey !== "GANTI_API_KEY";
-        if (window.isFirebaseSetup) {
-            try {
-                firebase.initializeApp(firebaseConfig);
-                window.fbDB = firebase.database();
-                window.postsRef = window.fbDB.ref('posts');
-            } catch (e) { console.error("Firebase Init Error:", e); }
+        // PROTEKSI: Harus login dulu untuk masuk web
+        if(!localStorage.getItem('activeUser')) {
+            window.location.replace("login.html");
         }
+        
+        // Sistem sekarang berjalan 100% secara LOKAL (tanpa Firebase)
+        
+        window.loadLocalData = function() {
+            let local = JSON.parse(localStorage.getItem('postsDB')) || [];
+            
+            // --- AUTO REPAIR DATA LAMA ---
+            let needsRepair = false;
+            local = local.map(post => {
+                // Perbaiki jika likedBy masih bentuk Array
+                if (Array.isArray(post.likedBy)) {
+                    const newLikedBy = {};
+                    post.likedBy.forEach(name => newLikedBy[name] = true);
+                    post.likedBy = newLikedBy;
+                    needsRepair = true;
+                } else if (!post.likedBy) {
+                    post.likedBy = {};
+                    needsRepair = true;
+                }
+                
+                // Perbaiki jika comments masih bentuk Array
+                if (Array.isArray(post.comments)) {
+                    const newComments = {};
+                    post.comments.forEach((c, idx) => {
+                        newComments['old-' + idx + '-' + Date.now()] = c;
+                    });
+                    post.comments = newComments;
+                    needsRepair = true;
+                } else if (!post.comments) {
+                    post.comments = {};
+                    needsRepair = true;
+                }
+                return post;
+            });
+
+            if (needsRepair) {
+                localStorage.setItem('postsDB', JSON.stringify(local));
+            }
+            
+            window.currentPostsList = local;
+            window.renderPosts(local);
+        };
 
         // --- GLOBAL UTILITIES ---
         window.showToast = function(message, isError = false) {
@@ -381,111 +422,166 @@
             if (!textContent && !window.pendingImage && !window.pendingLink) { window.showToast('Tuliskan sesuatu dulu!', true); return; }
 
             const cleanContent = textContent.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            if (window.isFirebaseSetup && window.postsRef) {
-                const btn = document.getElementById('submitPostBtn');
-                btn.disabled = true; btn.innerText = 'Memposting...';
-                window.postsRef.push({
-                    authorName: window.activeUserObj.username,
-                    authorAvatar: window.activeUserObj.avatar || '',
-                    content: cleanContent,
-                    image: window.pendingImage,
-                    link: window.pendingLink,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP,
-                    likedBy: {}, comments: {}
-                }).then(() => {
-                    textArea.value = ''; window.clearAttachments();
-                    btn.disabled = false; btn.innerText = 'Kirim Posting';
-                    window.showToast('Berhasil diposting!');
-                });
+            let localDB = JSON.parse(localStorage.getItem('postsDB')) || [];
+            
+            localDB.unshift({
+                firebaseKey: 'local-' + Date.now(),
+                authorName: window.activeUserObj.username,
+                authorAvatar: window.activeUserObj.avatar || '',
+                content: cleanContent, 
+                image: window.pendingImage, 
+                link: window.pendingLink,
+                timestamp: Date.now(), 
+                likedBy: {}, 
+                comments: {}
+            });
+            
+            localStorage.setItem('postsDB', JSON.stringify(localDB));
+            textArea.value = ''; 
+            window.clearAttachments();
+            window.currentPostsList = localDB;
+            window.renderPosts(localDB, null, window.activeUserObj.username); // Otomatis saring ke akun sendiri
+            window.showToast('Berhasil diposting!');
+        };
+
+        window.toggleLike = function(id) {
+            if (!window.activeUserObj) { window.showToast('Silakan login dulu!', true); return; }
+            let db = JSON.parse(localStorage.getItem('postsDB')) || [];
+            // Menggunakan == agar ID angka (seperti 1, 2) bisa cocok dengan ID teks ('1', '2')
+            const idx = db.findIndex(p => (p.firebaseKey == id || p.id == id));
+            
+            if (idx > -1) {
+                if (!db[idx].likedBy) db[idx].likedBy = {};
+                const myName = window.activeUserObj.username;
+                db[idx].likedBy[myName] ? delete db[idx].likedBy[myName] : db[idx].likedBy[myName] = true;
+                
+                // Simpan ke storage dan update memori aktif
+                localStorage.setItem('postsDB', JSON.stringify(db));
+                window.currentPostsList = db;
+                
+                window.renderPosts(db);
             } else {
-                let localDB = JSON.parse(localStorage.getItem('postsDB')) || [];
-                localDB.unshift({
-                    firebaseKey: 'local-' + Date.now(),
-                    authorName: window.activeUserObj.username,
-                    content: cleanContent, image: window.pendingImage, link: window.pendingLink,
-                    timestamp: Date.now(), likedBy: {}, comments: {}
-                });
-                localStorage.setItem('postsDB', JSON.stringify(localDB));
-                textArea.value = ''; window.clearAttachments();
-                window.renderPosts(localDB);
-                window.showToast('Diposting secara Lokal');
+                window.showToast('Gagal memproses Like', true);
             }
         };
 
-        window.toggleLike = function(key) {
+        window.submitInlineComment = function(id) {
             if (!window.activeUserObj) { window.showToast('Silakan login dulu!', true); return; }
-            if (window.isFirebaseSetup && window.postsRef) {
-                const ref = window.postsRef.child(key).child('likedBy').child(window.activeUserObj.username);
-                ref.once('value').then(snap => snap.val() ? ref.remove() : ref.set(true));
-            } else {
-                let db = JSON.parse(localStorage.getItem('postsDB')) || [];
-                const idx = db.findIndex(p => p.firebaseKey === key);
-                if (idx > -1) {
-                    if (!db[idx].likedBy) db[idx].likedBy = {};
-                    const uname = window.activeUserObj.username;
-                    db[idx].likedBy[uname] ? delete db[idx].likedBy[uname] : db[idx].likedBy[uname] = true;
-                    localStorage.setItem('postsDB', JSON.stringify(db));
-                    window.renderPosts(db);
-                }
-            }
-        };
-
-        window.submitInlineComment = function(key) {
-            if (!window.activeUserObj) { window.showToast('Silakan login dulu!', true); return; }
-            const input = document.getElementById('commentInput_' + key);
+            const input = document.getElementById('commentInput_' + id);
+            if (!input) return;
             const text = input.value.trim();
             if (!text) return;
+
             const clean = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            if (window.isFirebaseSetup && window.postsRef) {
-                window.postsRef.child(key).child('comments').push({ author: window.activeUserObj.username, text: clean }).then(() => input.value = '');
+            let db = JSON.parse(localStorage.getItem('postsDB')) || [];
+            const idx = db.findIndex(p => (p.firebaseKey == id || p.id == id));
+            
+            if (idx > -1) {
+                if (!db[idx].comments) db[idx].comments = {};
+                const cKey = 'c-' + Date.now();
+                db[idx].comments[cKey] = { author: window.activeUserObj.username, text: clean };
+                localStorage.setItem('postsDB', JSON.stringify(db));
+                input.value = ''; 
+                window.renderPosts(db);
             } else {
-                let db = JSON.parse(localStorage.getItem('postsDB')) || [];
-                const idx = db.findIndex(p => p.firebaseKey === key);
-                if (idx > -1) {
-                    if (!db[idx].comments) db[idx].comments = {};
-                    db[idx].comments['c-' + Date.now()] = { author: window.activeUserObj.username, text: clean };
-                    localStorage.setItem('postsDB', JSON.stringify(db));
-                    input.value = ''; window.renderPosts(db);
-                }
+                window.showToast('Gagal mengirim komentar', true);
             }
         };
 
-        window.deletePost = function(key) {
+        window.deletePost = function(id) {
             if (!confirm('Hapus postingan ini?')) return;
-            if (window.isFirebaseSetup && window.postsRef) {
-                window.postsRef.child(key).remove().then(() => window.showToast('Terhapus dari Cloud'));
-            } else {
-                let db = (JSON.parse(localStorage.getItem('postsDB')) || []).filter(p => p.firebaseKey !== key);
+            let db = (JSON.parse(localStorage.getItem('postsDB')) || []).filter(p => (p.firebaseKey != id && p.id != id));
+            localStorage.setItem('postsDB', JSON.stringify(db));
+            window.renderPosts(db);
+            window.showToast('Postingan dihapus');
+        };
+
+        window.deleteComment = function(postKey, commentKey) {
+            if (!confirm('Hapus komentar ini?')) return;
+            let db = JSON.parse(localStorage.getItem('postsDB')) || [];
+            const idx = db.findIndex(p => p.firebaseKey === postKey);
+            if (idx > -1 && db[idx].comments) {
+                delete db[idx].comments[commentKey];
                 localStorage.setItem('postsDB', JSON.stringify(db));
                 window.renderPosts(db);
-                window.showToast('Terhapus Lokal');
             }
         };
 
-        window.editPost = function(key) {
-            const list = window.currentPostsList || JSON.parse(localStorage.getItem('postsDB')) || [];
-            const post = list.find(p => p.firebaseKey === key);
+        // --- PREMIUM LOCAL FEATURES (Edit & Share) ---
+        window.editPost = function(id) {
+            const db = JSON.parse(localStorage.getItem('postsDB')) || [];
+            const post = db.find(p => (p.firebaseKey === id || p.id === id));
             if (!post) return;
-            const content = prompt("Edit postingan:", post.content.replace(/&lt;/g,'<').replace(/&gt;/g,'>'));
-            if (content && content.trim()) {
-                const clean = content.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-                if (window.isFirebaseSetup && window.postsRef) {
-                    window.postsRef.child(key).update({ content: clean }).then(() => window.showToast('Diperbarui!'));
-                } else {
-                    let db = JSON.parse(localStorage.getItem('postsDB')) || [];
-                    const idx = db.findIndex(p => p.firebaseKey === key);
-                    if (idx > -1) { db[idx].content = clean; localStorage.setItem('postsDB', JSON.stringify(db)); window.renderPosts(db); }
+            
+            const oldContent = (post.content || '').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+            
+            const modalWrapper = document.createElement('div');
+            modalWrapper.id = 'editPostModal';
+            modalWrapper.style = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(6px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity 0.2s ease-out;";
+            modalWrapper.innerHTML = `
+                <div style="background: white; width: 100%; max-width: 500px; border-radius: 20px; box-shadow: 0 32px 64px rgba(0,0,0,0.15); overflow: hidden; transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);" id="editModalBox">
+                    <div style="padding: 16px 24px; border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; background: #f8fafb;">
+                        <h3 style="margin: 0; font-size: 16px; color: #1e293b; font-weight: 800;">Edit Postingan</h3>
+                        <button onclick="window.closeEditModal()" style="background: none; border: none; font-size: 20px; color: #64748b; cursor: pointer;">✕</button>
+                    </div>
+                    <div style="padding: 24px;">
+                        <textarea id="editPostTextarea" style="width: 100%; height: 140px; padding: 16px; border: 2px solid rgba(26,163,154,0.15); border-radius: 12px; font-family: inherit; font-size: 14px; outline: none; resize: none; background: #fcfcfc; box-sizing: border-box;"></textarea>
+                    </div>
+                    <div style="padding: 16px 24px; border-top: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: flex-end; gap: 12px; background: #f8fafb;">
+                        <button onclick="window.closeEditModal()" style="padding: 10px 20px; border: 1px solid #e2e8f0; border-radius: 30px; background: white; cursor: pointer; font-weight: 600;">Batal</button>
+                        <button id="saveEditBtn" style="padding: 10px 20px; background: var(--primary-teal); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: 600;">Simpan</button>
+                    </div>
+                </div>`;
+            
+            document.body.appendChild(modalWrapper);
+            requestAnimationFrame(() => {
+                modalWrapper.style.opacity = '1';
+                document.getElementById('editModalBox').style.transform = 'translateY(0)';
+            });
+
+            const textarea = document.getElementById('editPostTextarea');
+            textarea.value = oldContent;
+            textarea.focus();
+
+            document.getElementById('saveEditBtn').onclick = function () {
+                const newText = textarea.value.trim();
+                if (newText !== '') {
+                    let fullDB = JSON.parse(localStorage.getItem('postsDB')) || [];
+                    const idx = fullDB.findIndex(p => (p.firebaseKey == id || p.id == id));
+                    if (idx > -1) {
+                        fullDB[idx].content = newText.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        localStorage.setItem('postsDB', JSON.stringify(fullDB));
+                        window.closeEditModal();
+                        window.renderPosts(fullDB);
+                        window.showToast('Postingan diperbarui!');
+                    }
                 }
+            };
+        };
+
+        window.closeEditModal = function() {
+            const modal = document.getElementById('editPostModal');
+            if (modal) {
+                modal.style.opacity = '0';
+                document.getElementById('editModalBox').style.transform = 'translateY(20px)';
+                setTimeout(() => modal.remove(), 200);
             }
         };
 
-        window.shareLink = function(name) {
-            const url = window.location.origin + window.location.pathname + "?komunitas_castorice_dari=" + encodeURIComponent(name);
-            navigator.clipboard.writeText(url).then(() => window.showToast('Tautan disalin!'));
-        };
-
-        window.handleCommentEnter = function(e, key) {
-            if (e.key === 'Enter') { e.preventDefault(); window.submitInlineComment(key); }
+        window.sharePost = function(authorName) {
+            const url = window.location.origin + window.location.pathname + "?komunitas_castorice_dari=" + encodeURIComponent(authorName);
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(() => window.showToast('Tautan disalin!'));
+            } else {
+                const textArea = document.createElement("textarea");
+                textArea.value = url;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                window.showToast('Tautan disalin!');
+            }
+            document.querySelectorAll('[id^="post-menu-"]').forEach(m => m.style.display = 'none');
         };
 
         // --- RENDER ENGINE ---
@@ -501,38 +597,58 @@
                     <span style="font-weight:700;color:var(--primary-teal);">Postingan dari: ${filterAuthor}</span>
                     <button onclick="window.location.href='posting.html'" style="background:var(--primary-teal);color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">Kembali</button>
                 </div>`;
-            } else if (filterTag) {
-                filtered = filtered.filter(p => p.content && p.content.includes('#' + filterTag));
-                html += `<div style="background:#f1f9fa;padding:16px;border-radius:12px;margin-bottom:24px;border:1px dashed var(--primary-teal);display:flex;justify-content:space-between;align-items:center;">
-                    <span style="font-weight:700;color:var(--primary-teal);">Tag: #${filterTag}</span>
-                    <button onclick="window.location.href='posting.html'" style="background:var(--primary-teal);color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">Hapus</button>
-                </div>`;
             }
 
-            if (filtered.length === 0 && (filterTag || filterAuthor)) {
-                html += `<div style="text-align:center;padding:40px;color:var(--text-muted);">Belum ada postingan di sini.</div>`;
+            if (filtered.length === 0) {
+                html += `<div style="text-align:center;padding:60px 40px;background:white;border-radius:30px;box-shadow:var(--card-shadow);">
+                    <i class="ph ph-unite" style="font-size:48px; color:var(--primary-teal); opacity:0.5; margin-bottom:16px; display:block;"></i>
+                    <p style="font-weight:700; color:var(--text-dark);">Belum ada postingan saat ini.</p>
+                </div>`;
             }
 
             filtered.forEach(post => {
                 const u = usersDB.find(user => user.username === post.authorName);
-                const avatar = post.authorAvatar || (u && u.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.authorName)}&background=38495a&color=fff`;
+                
+                // --- LOGIKA AVATAR PINTAR BERDASARKAN PENDAFTARAN ---
+                let avatar = `https://ui-avatars.com/api/?background=random&color=fff&bold=true&name=${encodeURIComponent(post.authorName)}`;
+                
+                if (u && u.avatar) {
+                    avatar = u.avatar; // Jika akun terdaftar punya foto, gunakan itu
+                } else if (post.authorAvatar) {
+                    avatar = post.authorAvatar; // Jika tidak, gunakan foto saat postingan dibuat
+                } else if (post.authorName === "Jingliu Official" || post.authorName === "Castorice Admin") {
+                    avatar = "chibi_jingliu.png"; // Foto khusus akun resmi
+                }
+                
                 const likedBy = post.likedBy || {};
                 const isLiked = window.activeUserObj && likedBy[window.activeUserObj.username];
                 const comments = Object.entries(post.comments || {}).map(([k,v])=>({key:k,...v}));
+                const postId = post.firebaseKey || post.id;
                 
                 let commentsHtml = '<div style="margin-top:16px;padding-top:16px;border-top:1px solid #f0f0f0;display:flex;flex-direction:column;gap:12px;">';
                 comments.forEach(c => {
                     const cu = usersDB.find(user => user.username === c.author);
-                    const cav = (cu && cu.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.author)}&background=1aa39a&color=fff`;
-                    commentsHtml += `<div style="background:#f8fafb;padding:10px;border-radius:8px;display:flex;gap:12px;">
-                        <img src="${cav}" style="width:24px;height:24px;border-radius:50%;">
-                        <div style="flex:1;"><div style="font-weight:700;font-size:12px;">${c.author}</div><div style="font-size:13px;">${c.text}</div></div>
+                    let cav = 'https://ui-avatars.com/api/?background=random&color=fff&name=' + encodeURIComponent(c.author);
+                    if(cu && cu.avatar) cav = cu.avatar;
+                    else if(c.author === "Jingliu Official" || c.author === "Castorice Admin") cav = "chibi_jingliu.png";
+
+                    const isMyComment = window.activeUserObj && c.author === window.activeUserObj.username;
+                    
+                    commentsHtml += `<div style="background:#f8fafb;padding:10px;border-radius:12px;display:flex;gap:12px;position:relative;">
+                        <img src="${cav}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;">
+                        <div style="flex:1;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div style="font-weight:700;font-size:12px;">${c.author}</div>
+                                ${isMyComment ? `<button onclick="window.deleteComment('${postId}', '${c.key}')" style="color:#ea4335; font-size:14px; opacity:0.6; border:none; background:none; cursor:pointer;"><i class="ph ph-trash"></i></button>` : ''}
+                            </div>
+                            <div style="font-size:13px;">${c.text}</div>
+                        </div>
                     </div>`;
                 });
                 if (window.activeUserObj) {
                     commentsHtml += `<div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
-                        <input type="text" id="commentInput_${post.firebaseKey}" placeholder="Tulis balasan..." style="flex:1;padding:8px 16px;border-radius:20px;border:1px solid #eee;" onkeypress="window.handleCommentEnter(event, '${post.firebaseKey}')">
-                        <button onclick="window.submitInlineComment('${post.firebaseKey}')" style="background:var(--primary-teal);color:white;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;"><i class="ph-bold ph-paper-plane-right"></i></button>
+                        <input type="text" id="commentInput_${postId}" placeholder="Tulis balasan..." style="flex:1;padding:8px 16px;border-radius:20px;border:1px solid #eee;" onkeypress="if(event.key==='Enter') window.submitInlineComment('${postId}')">
+                        <button onclick="window.submitInlineComment('${postId}')" style="background:var(--primary-teal);color:white;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;"><i class="ph-bold ph-paper-plane-right"></i></button>
                     </div>`;
                 }
                 commentsHtml += '</div>';
@@ -545,30 +661,25 @@
                         <img src="${avatar}" class="author-avatar">
                         <div class="author-info"><h3>${post.authorName}</h3><p>${post.timestamp ? new Date(post.timestamp).toLocaleString() : 'Baru saja'}</p></div>
                         <div style="margin-left:auto;position:relative;" class="post-menu-wrapper">
-                            <button onclick="window.toggleMenu('post-menu-${post.firebaseKey}')" style="background:none;border:none;cursor:pointer;"><i class="ph-bold ph-dots-three" style="font-size:24px;"></i></button>
-                            <div id="post-menu-${post.firebaseKey}" style="display:none;position:absolute;right:0;background:white;border:1px solid #eee;border-radius:8px;z-index:99;min-width:120px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+                            <button onclick="window.toggleMenu('post-menu-${postId}')" style="background:none;border:none;cursor:pointer;"><i class="ph-bold ph-dots-three" style="font-size:24px;"></i></button>
+                            <div id="post-menu-${postId}" style="display:none;position:absolute;right:0;background:white;border:1px solid #eee;border-radius:8px;z-index:99;min-width:140px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
                                 ${window.activeUserObj && post.authorName === window.activeUserObj.username ? `
-                                    <button onclick="window.editPost('${post.firebaseKey}')" style="width:100%;padding:10px;text-align:left;border:none;background:none;cursor:pointer;">Edit</button>
-                                    <button onclick="window.deletePost('${post.firebaseKey}')" style="width:100%;padding:10px;text-align:left;border:none;background:none;cursor:pointer;color:red;">Hapus</button>
+                                    <button onclick="window.editPost('${postId}')" style="width:100%;padding:10px;text-align:left;border:none;background:none;cursor:pointer;font-weight:600;">Edit</button>
+                                    <button onclick="window.deletePost('${postId}')" style="width:100%;padding:10px;text-align:left;border:none;background:none;cursor:pointer;color:#ea4335;font-weight:600;">Hapus</button>
                                 ` : ''}
-                                <button onclick="window.shareLink('${post.authorName}')" style="width:100%;padding:10px;text-align:left;border:none;background:none;cursor:pointer;">Bagikan</button>
+                                <button onclick="window.sharePost('${post.authorName}')" style="width:100%;padding:10px;text-align:left;border:none;background:none;cursor:pointer;font-weight:600;">Bagikan</button>
                             </div>
                         </div>
                     </div>
-                    <div class="post-content-text">${window.formatHashtags(post.content)}${media}</div>
+                    <div class="post-content-text">${post.content}${media}</div>
                     <div class="post-engagement">
-                        <button class="engage-btn" onclick="window.toggleLike('${post.firebaseKey}')" style="${isLiked?'color:var(--accent-pink);':''}"><i class="${isLiked?'ph-fill':'ph'} ph-heart"></i> ${Object.keys(likedBy).length}</button>
-                        <button class="engage-btn" onclick="document.getElementById('commentInput_${post.firebaseKey}').focus()"><i class="ph ph-chat-circle"></i> ${comments.length}</button>
+                        <button class="engage-btn" onclick="window.toggleLike('${postId}')" style="${isLiked?'color:var(--accent-pink);':''}"><i class="${isLiked?'ph-fill':'ph'} ph-heart"></i> ${Object.keys(likedBy).length}</button>
+                        <button class="engage-btn" onclick="const inpt = document.getElementById('commentInput_${postId}'); if(inpt) inpt.focus(); else window.showToast('Silakan login untuk berkomentar', true);"><i class="ph ph-chat-circle"></i> ${comments.length}</button>
                     </div>
                     ${commentsHtml}
                 </div>`;
             });
             container.innerHTML = html;
-        };
-
-        window.formatHashtags = function(text) {
-            if(!text) return "";
-            return text.replace(/#(\w+)/g, '<span class="hashtag" onclick="window.renderPosts(window.currentPostsList, \'$1\')" style="color:var(--primary-teal);cursor:pointer;font-weight:600;">#$1</span>');
         };
 
         // --- AUTH & DATA INIT ---
@@ -583,23 +694,28 @@
                     <button onclick="localStorage.removeItem('activeUser');window.location.reload();" class="btn btn-outline" style="padding:8px 20px;">Logout</button>
                 </div>`;
                 document.getElementById('activeUserName').innerText = window.activeUserObj.username;
-                document.getElementById('activeUserAvatar').src = window.activeUserObj.avatar || 'chibi_jingliu.png';
+                if(document.getElementById('welcomeUserName')) {
+                    document.getElementById('welcomeUserName').innerText = window.activeUserObj.username;
+                }
+                
+                // PP Kotak Posting Akurat dari Akun Terdaftar
+                const myAvatar = window.activeUserObj.avatar || `https://ui-avatars.com/api/?background=38495a&color=fff&name=${encodeURIComponent(window.activeUserObj.username)}`;
+                document.getElementById('activeUserAvatar').src = myAvatar;
             } else {
                 headerRight.innerHTML = `<a href="login.html" class="btn btn-outline">Log in</a> <a href="signup.html" class="btn btn-primary">Sign up</a>`;
                 document.getElementById('createPostCard').style.display = 'none';
                 document.getElementById('createPostNavBtn').style.display = 'none';
             }
 
-            const authorQuery = new URLSearchParams(window.location.search).get('komunitas_castorice_dari');
-            if (window.isFirebaseSetup && window.postsRef) {
-                window.postsRef.orderByChild('timestamp').on('value', snap => {
-                    const data = snap.val() || {};
-                    const list = Object.entries(data).map(([k,v])=>({firebaseKey:k,...v})).sort((a,b)=>b.timestamp-a.timestamp);
-                    window.currentPostsList = list; window.renderPosts(list, null, authorQuery);
-                });
-            } else {
-                const local = JSON.parse(localStorage.getItem('postsDB')) || [];
-                window.currentPostsList = local; window.renderPosts(local, null, authorQuery);
+            window.loadLocalData();
+
+            // Cek jika ada filter user dari URL (Misal dari Profile)
+            const params = new URLSearchParams(window.location.search);
+            const userFilter = params.get('user');
+            if(userFilter) {
+                setTimeout(() => {
+                    window.renderPosts(window.currentPostsList, null, userFilter);
+                }, 100);
             }
         });
     </script>
